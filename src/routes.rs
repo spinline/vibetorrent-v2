@@ -49,7 +49,6 @@ pub async fn index(
     let template = IndexTemplate {
         stats,
         torrents: torrent_views,
-        filter: "all".to_string(),
         total_count,
         downloading_count,
         seeding_count,
@@ -126,8 +125,6 @@ pub async fn torrents_list(
     
     let list_template = TorrentListTemplate {
         torrents: torrent_views,
-        filter: "all".to_string(),
-        total_count: torrents.len(),
     };
     
     let counts_template = SidebarCountsTemplate {
@@ -218,8 +215,6 @@ pub async fn torrents_filtered(
     
     let list_template = TorrentListTemplate {
         torrents: torrent_views,
-        filter,
-        total_count: torrents.len(),
     };
     
     let counts_template = SidebarCountsTemplate {
@@ -354,8 +349,6 @@ pub async fn add_torrent(
     
     let template = TorrentListTemplate {
         torrents: torrent_views,
-        filter: "all".to_string(),
-        total_count: torrents.len(),
     };
     
     Ok((

@@ -82,16 +82,6 @@ impl Torrent {
         }
     }
     
-    pub fn status_class(&self) -> &'static str {
-        match self.state {
-            TorrentState::Downloading => "text-blue-400",
-            TorrentState::Seeding => "text-green-400",
-            TorrentState::Paused => "text-orange-400",
-            TorrentState::Hashing => "text-yellow-400",
-            TorrentState::Error => "text-red-400",
-        }
-    }
-    
     pub fn progress_bar_class(&self) -> &'static str {
         match self.state {
             TorrentState::Downloading => "bg-blue-500",
