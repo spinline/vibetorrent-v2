@@ -51,6 +51,9 @@ tempfile = "3"
 # Embed static files into binary
 rust-embed = "8"
 
+# CLI arguments
+clap = { version = "4", features = ["derive"] }
+
 [profile.release]
 opt-level = 3
 lto = true

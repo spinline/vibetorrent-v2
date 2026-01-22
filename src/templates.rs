@@ -8,6 +8,14 @@ pub struct BaseTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "setup.html")]
+pub struct SetupTemplate {
+    pub scgi_socket: String,
+    pub bind_address: String,
+    pub error: Option<String>,
+}
+
+#[derive(Template)]
 #[template(path = "index.html")]
 pub struct IndexTemplate {
     pub stats: GlobalStats,
