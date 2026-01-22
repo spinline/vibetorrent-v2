@@ -17,6 +17,7 @@ pub struct IndexTemplate {
     pub downloading_count: usize,
     pub seeding_count: usize,
     pub paused_count: usize,
+    pub rtorrent_version: String,
 }
 
 #[derive(Template)]

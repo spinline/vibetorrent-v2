@@ -299,7 +299,9 @@ impl RtorrentClient {
             ],
         );
         
+        tracing::debug!("get_torrents request XML: {}", xml);
         let response = self.send_request(&xml).await?;
+        tracing::debug!("get_torrents response: {}", response);
         self.parse_torrents_response(&response)
     }
     
@@ -309,7 +311,8 @@ impl RtorrentClient {
         reader.config_mut().trim_text(true);
         
         let mut current_values: Vec<String> = Vec::new();
-        let mut in_value = false;
+        let mut in_value_tag = false;
+        let mut value_collected = false;
         let mut in_array = false;
         let mut array_depth = 0;
         let mut buf = Vec::new();
@@ -327,7 +330,8 @@ impl RtorrentClient {
                         }
                         b"i4" | b"i8" | b"int" | b"string" | b"double" => {
                             if in_array {
-                                in_value = true;
+                                in_value_tag = true;
+                                value_collected = false;
                             }
                         }
                         _ => {}
@@ -379,21 +383,29 @@ impl RtorrentClient {
                             }
                         }
                         b"i4" | b"i8" | b"int" | b"string" | b"double" => {
-                            in_value = false;
+                            // If we're closing a value tag and no value was collected, add empty string
+                            if in_value_tag && !value_collected && in_array {
+                                current_values.push(String::new());
+                            }
+                            in_value_tag = false;
+                            value_collected = false;
                         }
                         _ => {}
                     }
                 }
                 Ok(Event::Text(e)) => {
-                    if in_value && in_array {
+                    if in_value_tag && in_array {
                         current_values.push(e.unescape().unwrap_or_default().to_string());
+                        value_collected = true;
                     }
                 }
                 Ok(Event::Empty(e)) => {
                     // Handle empty tags like <string/>
                     if in_array {
                         match e.name().as_ref() {
-                            b"string" => current_values.push(String::new()),
+                            b"string" | b"i4" | b"i8" | b"int" | b"double" => {
+                                current_values.push(String::new());
+                            }
                             _ => {}
                         }
                     }
@@ -405,6 +417,11 @@ impl RtorrentClient {
                 _ => {}
             }
             buf.clear();
+        }
+        
+        tracing::debug!("Parsed {} torrents", torrents.len());
+        for t in &torrents {
+            tracing::debug!("Torrent: {} - {}", t.hash, t.name);
         }
         
         Ok(torrents)
@@ -462,6 +479,38 @@ impl RtorrentClient {
         None
     }
     
+    pub async fn get_client_version(&self) -> Result<String> {
+        let xml = Self::build_simple_xml("system.client_version");
+        let response = self.send_request(&xml).await?;
+        self.parse_string_response(&response)
+            .ok_or_else(|| AppError::XmlRpcError("Failed to parse version".to_string()))
+    }
+
+    fn parse_string_response(&self, xml: &str) -> Option<String> {
+        let mut reader = Reader::from_str(xml);
+        reader.config_mut().trim_text(true);
+        let mut buf = Vec::new();
+        let mut in_string = false;
+
+        loop {
+            match reader.read_event_into(&mut buf) {
+                Ok(Event::Start(e)) => {
+                    if e.name().as_ref() == b"string" {
+                        in_string = true;
+                    }
+                }
+                Ok(Event::Text(e)) if in_string => {
+                    return e.unescape().ok().map(|s| s.to_string());
+                }
+                Ok(Event::Eof) => break,
+                Err(_) => break,
+                _ => {}
+            }
+            buf.clear();
+        }
+        None
+    }
+
     pub async fn pause_torrent(&self, hash: &str) -> Result<()> {
         let xml = Self::build_single_param_xml("d.stop", hash);
         self.send_request(&xml).await?;
@@ -485,12 +534,33 @@ impl RtorrentClient {
     }
     
     pub async fn add_torrent_url(&self, url: &str) -> Result<()> {
-        let xml = Self::build_single_param_xml("load.start", url);
-        self.send_request(&xml).await?;
+        tracing::info!("Adding torrent from URL: {}", url);
+        // Escape XML special characters in the URL
+        let escaped_url = url
+            .replace('&', "&amp;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;")
+            .replace('"', "&quot;")
+            .replace('\'', "&apos;");
+        // load.start needs empty string as first param (for view), then the URL
+        let xml = format!(
+            r#"<?xml version="1.0"?>
+<methodCall>
+<methodName>load.start</methodName>
+<params>
+<param><value><string></string></value></param>
+<param><value><string>{}</string></value></param>
+</params>
+</methodCall>"#,
+            escaped_url
+        );
+        let response = self.send_request(&xml).await?;
+        tracing::debug!("add_torrent_url response: {}", response);
         Ok(())
     }
     
     pub async fn add_torrent_file(&self, data: &[u8]) -> Result<()> {
+        tracing::info!("Adding torrent from file, size: {} bytes", data.len());
         // For file uploads, we use load.raw_start with base64 encoded data
         let encoder = base64_encode(data);
         let xml = format!(
@@ -504,7 +574,8 @@ impl RtorrentClient {
 </methodCall>"#,
             encoder
         );
-        self.send_request(&xml).await?;
+        let response = self.send_request(&xml).await?;
+        tracing::debug!("add_torrent_file response: {}", response);
         Ok(())
     }
 }

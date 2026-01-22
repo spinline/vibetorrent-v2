@@ -9,6 +9,12 @@
             "approve": true,
             "matchCommandLine": true
         },
-        "cargo build": true
+        "cargo build": true,
+        "apt": true,
+        "/^sudo apt update && sudo apt install -y rtorrent$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "mkdir": true
     }
 }

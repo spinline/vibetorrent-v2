@@ -31,6 +31,7 @@ pub async fn index(
         free_disk_space: 2_000_000_000_000,
         active_peers: 0,
     });
+    let rtorrent_version = state.rtorrent.get_client_version().await.unwrap_or_else(|_| "Unknown".to_string());
     
     let mut torrent_views = Vec::new();
     for t in &torrents {
@@ -51,6 +52,7 @@ pub async fn index(
         downloading_count,
         seeding_count,
         paused_count,
+        rtorrent_version,
     };
     
     Ok(Html(template.render().map_err(|e| AppError::TemplateError(e.to_string()))?))
@@ -197,23 +199,36 @@ pub async fn add_torrent(
     State(state): State<Arc<AppState>>,
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse> {
+    tracing::info!("add_torrent called");
+    
     while let Some(field) = multipart.next_field().await.map_err(|e| AppError::BadRequest(e.to_string()))? {
         let name = field.name().unwrap_or_default().to_string();
+        tracing::debug!("Processing field: {}", name);
         
         match name.as_str() {
             "url" => {
                 let url = field.text().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
+                tracing::info!("URL field value: '{}'", url);
                 if !url.trim().is_empty() {
-                    state.rtorrent.add_torrent_url(&url).await?;
+                    if let Err(e) = state.rtorrent.add_torrent_url(&url).await {
+                        tracing::error!("Failed to add torrent URL: {:?}", e);
+                        return Err(e);
+                    }
                 }
             }
             "file" => {
                 let data = field.bytes().await.map_err(|e| AppError::BadRequest(e.to_string()))?;
+                tracing::info!("File field size: {} bytes", data.len());
                 if !data.is_empty() {
-                    state.rtorrent.add_torrent_file(&data).await?;
+                    if let Err(e) = state.rtorrent.add_torrent_file(&data).await {
+                        tracing::error!("Failed to add torrent file: {:?}", e);
+                        return Err(e);
+                    }
                 }
             }
-            _ => {}
+            _ => {
+                tracing::debug!("Unknown field: {}", name);
+            }
         }
     }
     
