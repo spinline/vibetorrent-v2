@@ -85,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
         // Stats
         .route("/stats", get(routes::stats_partial))
         // Static files (embedded in binary)
-        .route("/static/*path", get(serve_static))
+        .route("/static/{*path}", get(serve_static))
         // State and middleware
         .with_state(state)
         .layer(CompressionLayer::new());
