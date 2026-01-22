@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VibeTorrent{% endblock %}</title>
+    
+    <!-- FOUC Prevention: Critical CSS inline -->
+    <style>
+        /* Critical CSS - prevents FOUC */
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #0d1117;
+            --bg-card: #161b22;
+            --border-color: #21262d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+        }
+        
+        html, body {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+        
+        /* Hide content until styles load */
+        .js-loading * {
+            visibility: hidden;
+        }
+        
+        .js-loading {
+            background-color: var(--bg-primary);
+        }
+        
+        /* Preload indicator */
+        .preload-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: var(--bg-primary);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s ease-out;
+        }
+        
+        .preload-overlay.loaded {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* App shell styles */
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+            background-color: var(--bg-primary);
+        }
+        
+        .sidebar {
+            width: 200px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        
+        .main-content {
+            flex: 1;
+            background-color: var(--bg-primary);
+        }
+    </style>
+    
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/static/css/output.css">
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@2.0.4" 
+            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" 
+            crossorigin="anonymous"></script>
+    
+    <!-- Hyperscript -->
+    <script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
+    
+    <!-- FOUC Prevention Script -->
+    <script>
+        // Add loading class immediately
+        document.documentElement.classList.add('js-loading');
+        
+        // Remove loading class when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Small delay to ensure CSS is applied
+            requestAnimationFrame(function() {
+                document.documentElement.classList.remove('js-loading');
+                var overlay = document.getElementById('preload-overlay');
+                if (overlay) {
+                    overlay.classList.add('loaded');
+                    setTimeout(function() {
+                        overlay.remove();
+                    }, 200);
+                }
+            });
+        });
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased" 
+      hx-boost="true"
+      _="on closeModal remove .modal-open from body then remove #modal-backdrop">
+    
+    <!-- Preload overlay for FOUC prevention -->
+    <div id="preload-overlay" class="preload-overlay">
+        <div class="flex items-center gap-3">
+            <svg class="animate-spin h-8 w-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-slate-400 text-lg font-medium">Loading VibeTorrent...</span>
+        </div>
+    </div>
+    
+    {% block body %}{% endblock %}
+    
+    <!-- Modal container -->
+    <div id="modal-container"></div>
+</body>
+</html>

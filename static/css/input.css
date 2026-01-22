@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* FOUC Prevention - Critical Base Styles */
+@layer base {
+  html {
+    background-color: #0a0e14;
+    color: #e6edf3;
+  }
+  
+  body {
+    background-color: #0a0e14;
+    min-height: 100vh;
+  }
+  
+  /* Prevent layout shift */
+  :root {
+    --sidebar-width: 13rem;
+  }
+}
+
+@layer components {
+  /* Progress bar animation */
+  .progress-bar {
+    @apply h-full rounded-full transition-all duration-300;
+  }
+  
+  /* Status badges */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-downloading {
+    @apply bg-blue-500/10 text-blue-400;
+  }
+  
+  .status-seeding {
+    @apply bg-emerald-500/10 text-emerald-400;
+  }
+  
+  .status-paused {
+    @apply bg-orange-500/10 text-orange-400;
+  }
+  
+  .status-hashing {
+    @apply bg-yellow-500/10 text-yellow-400;
+  }
+  
+  .status-error {
+    @apply bg-red-500/10 text-red-400;
+  }
+  
+  /* Nav items */
+  .nav-item {
+    @apply flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 mb-1 cursor-pointer transition-colors;
+  }
+  
+  .nav-item.active {
+    @apply bg-slate-800 text-white;
+  }
+  
+  /* Torrent row */
+  .torrent-row {
+    @apply grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-800/50 hover:bg-slate-900/50 transition-colors;
+  }
+  
+  /* Modal */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black/70 backdrop-blur-sm z-40 flex items-center justify-center;
+  }
+  
+  .modal-content {
+    @apply bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #374151 #0a0e14;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #0a0e14;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 4px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

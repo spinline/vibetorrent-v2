@@ -1,0 +1,14 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "cargo init": true,
+        "/^source ~/\\.zshrc && which cargo \\|\\| echo \"Cargo not found\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^source \"\\$HOME/\\.cargo/env\" && cd /Users/bilal/vibetorrent && cargo init --name vibetorrent \\.$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "cargo build": true
+    }
+}
