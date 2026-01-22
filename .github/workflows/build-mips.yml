@@ -41,11 +41,9 @@ jobs:
       - name: Strip binary (reduce size ~50%)
         run: |
           docker run --rm -v $PWD:/work -w /work ghcr.io/cross-rs/mips-unknown-linux-musl:main \
-            sh -c "find /usr -name '*strip*' 2>/dev/null | head -5 && \
-                   /usr/local/mips-linux-musl/bin/mips-linux-musl-strip target/mips-unknown-linux-musl/release/vibetorrent || \
-                   /usr/bin/mips-linux-musl-strip target/mips-unknown-linux-musl/release/vibetorrent || \
-                   strip target/mips-unknown-linux-musl/release/vibetorrent || \
-                   echo 'Strip not found, continuing without strip'"
+            sh -c "/usr/local/mips-linux-muslsf/bin/strip target/mips-unknown-linux-musl/release/vibetorrent || \
+                   /usr/local/bin/mips-linux-muslsf-strip target/mips-unknown-linux-musl/release/vibetorrent || \
+                   echo 'Strip failed, continuing without strip'"
 
       - name: Prepare release artifacts
         run: |
