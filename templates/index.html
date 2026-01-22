@@ -233,10 +233,11 @@
 </div>
 
 <script>
-    // Current filter and sort state
+    // Current filter, sort, and search state
     let currentFilter = 'all';
     let currentSort = null;
     let currentOrder = 'desc';
+    let currentSearch = '';
     
     // Icon paths - simple chevrons
     const iconDown = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>';
@@ -245,11 +246,37 @@
     
     function buildUrl() {
         let url = currentFilter === 'all' ? '/torrents' : `/torrents/filter/${currentFilter}`;
+        const params = new URLSearchParams();
         if (currentSort) {
-            url += `?sort=${currentSort}&order=${currentOrder}`;
+            params.set('sort', currentSort);
+            params.set('order', currentOrder);
+        }
+        if (currentSearch) {
+            params.set('search', currentSearch);
+        }
+        if (params.toString()) {
+            url += '?' + params.toString();
         }
         return url;
     }
+    
+    function updateAutoRefresh() {
+        const torrentList = document.getElementById('torrent-list');
+        const url = buildUrl();
+        torrentList.setAttribute('hx-get', url);
+        htmx.process(torrentList);
+    }
+    
+    // Track search input changes
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('input[name="search"]');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                currentSearch = this.value;
+                updateAutoRefresh();
+            });
+        }
+    });
     
     function setFilter(filter) {
         currentFilter = filter;
@@ -262,14 +289,9 @@
             }
         });
         
-        // Update the auto-refresh URL
-        const torrentList = document.getElementById('torrent-list');
-        const url = buildUrl();
-        torrentList.setAttribute('hx-get', url);
-        htmx.process(torrentList);
-        
-        // Make the request
-        htmx.ajax('GET', url, {target: '#torrent-list', swap: 'innerHTML'});
+        // Update the auto-refresh URL and make request
+        updateAutoRefresh();
+        htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'});
     }
     
     function toggleSort(btn, sortField) {
@@ -298,28 +320,29 @@
         activeIcon.classList.add('opacity-100');
         activeIcon.innerHTML = currentOrder === 'desc' ? iconDown : iconUp;
         
-        // Update the auto-refresh URL (considering current filter)
-        const torrentList = document.getElementById('torrent-list');
-        const url = buildUrl();
-        torrentList.setAttribute('hx-get', url);
-        htmx.process(torrentList);
-        
-        // Make the request
-        htmx.ajax('GET', url, {target: '#torrent-list', swap: 'innerHTML'});
+        // Update the auto-refresh URL and make request
+        updateAutoRefresh();
+        htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'});
     }
     
     // Mobile sidebar toggle functions
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        sidebar.classList.toggle('-translate-x-full');
-        overlay.classList.toggle('hidden');
+        
+        if (sidebar.style.transform === 'translateX(0px)') {
+            sidebar.style.transform = '';
+            overlay.classList.add('hidden');
+        } else {
+            sidebar.style.transform = 'translateX(0px)';
+            overlay.classList.remove('hidden');
+        }
     }
     
     function closeSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        sidebar.classList.add('-translate-x-full');
+        sidebar.style.transform = '';
         overlay.classList.add('hidden');
     }
     

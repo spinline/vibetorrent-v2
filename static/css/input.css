@@ -77,6 +77,11 @@
   .modal-content {
     @apply bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden;
   }
+  
+  /* Mobile sidebar open state */
+  .sidebar-open {
+    transform: translateX(0) !important;
+  }
 }
 
 @layer utilities {
