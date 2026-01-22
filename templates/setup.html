@@ -26,7 +26,7 @@
             </div>
             {% endif %}
             
-            <form method="POST" action="/setup" class="space-y-4">
+            <form method="POST" action="/setup" hx-boost="false" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-300 mb-2">
                         rTorrent SCGI Socket
