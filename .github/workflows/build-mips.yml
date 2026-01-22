@@ -38,6 +38,11 @@ jobs:
         run: |
           cross build --release --target mips-unknown-linux-musl
 
+      - name: Strip binary (reduce size ~50%)
+        run: |
+          docker run --rm -v $PWD:/work -w /work ghcr.io/cross-rs/mips-unknown-linux-musl:main \
+            mips-linux-musl-strip target/mips-unknown-linux-musl/release/vibetorrent
+
       - name: Prepare release artifacts
         run: |
           cp target/mips-unknown-linux-musl/release/vibetorrent vibetorrent-mips
