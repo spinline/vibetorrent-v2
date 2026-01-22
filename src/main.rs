@@ -324,7 +324,7 @@ async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     
     // Load config if exists (CLI args can override)
-    let config = if let Some(socket) = args.socket.as_ref() {
+    let mut config = if let Some(socket) = args.socket.as_ref() {
         // CLI socket provided - use it
         Some(Config {
             scgi_socket: socket.clone(),
@@ -337,6 +337,16 @@ async fn main() -> anyhow::Result<()> {
         // No config - will show setup
         None
     };
+    
+    // Test rtorrent connection if config exists
+    if let Some(ref cfg) = config {
+        let client = crate::rtorrent::RtorrentClient::new(cfg.scgi_socket.clone());
+        if !client.test_connection().await {
+            eprintln!("⚠️  Cannot connect to rtorrent at {}", cfg.scgi_socket);
+            eprintln!("   Starting setup wizard...");
+            config = None; // Force setup mode
+        }
+    }
     
     // Determine bind address
     let bind_addr = args.bind

@@ -33,7 +33,7 @@ pub async fn index(
         free_disk_space: 2_000_000_000_000,
         active_peers: 0,
     });
-    let rtorrent_version = state.rtorrent.get_client_version().await.unwrap_or_else(|_| "Unknown".to_string());
+    let rtorrent_version = state.rtorrent.get_client_version().await.unwrap_or_else(|_| "Disconnected".to_string());
     
     let mut torrent_views = Vec::new();
     for t in &torrents {

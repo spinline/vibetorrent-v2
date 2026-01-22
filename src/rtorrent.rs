@@ -153,6 +153,11 @@ impl RtorrentClient {
         Self { socket_path }
     }
     
+    /// Test connection to rtorrent by attempting to connect to the socket
+    pub async fn test_connection(&self) -> bool {
+        self.connect().await.is_ok()
+    }
+    
     async fn connect(&self) -> Result<UnixStream> {
         UnixStream::connect(&self.socket_path)
             .await
