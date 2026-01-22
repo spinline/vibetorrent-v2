@@ -390,5 +390,17 @@
             });
         }
     });
+    
+    // Update footer count after HTMX swaps
+    document.body.addEventListener('htmx:afterSwap', (e) => {
+        if (e.detail.target.id === 'torrent-list') {
+            const countEl = document.querySelector('[data-torrent-count]');
+            const footer = document.getElementById('torrent-footer');
+            if (countEl && footer) {
+                const count = countEl.getAttribute('data-torrent-count');
+                footer.textContent = 'Showing ' + count + ' torrents';
+            }
+        }
+    });
 </script>
 {% endblock %}
