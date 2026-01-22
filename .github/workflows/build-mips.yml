@@ -24,7 +24,7 @@ jobs:
           echo "Generated tag: $TAG_NAME"
 
       - name: Install Rust
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: mips-unknown-linux-musl
 
