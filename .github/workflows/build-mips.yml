@@ -1,0 +1,71 @@
+name: Build MIPS Big Endian
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate tag name
+        id: tag
+        run: |
+          TAG_NAME="v$(date +'%Y%m%d-%H%M%S')"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "Generated tag: $TAG_NAME"
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: mips-unknown-linux-musl
+
+      - name: Install cross-compilation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build for MIPS Big Endian
+        run: |
+          cross build --release --target mips-unknown-linux-musl
+
+      - name: Prepare release artifacts
+        run: |
+          mkdir -p release
+          cp target/mips-unknown-linux-musl/release/vibetorrent release/
+          cp -r templates release/
+          cp -r static release/
+          cd release && tar -czvf ../vibetorrent-mips-${{ steps.tag.outputs.tag_name }}.tar.gz .
+
+      - name: Create Git tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag ${{ steps.tag.outputs.tag_name }}
+          git push origin ${{ steps.tag.outputs.tag_name }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag_name }}
+          name: Release ${{ steps.tag.outputs.tag_name }}
+          body: |
+            Automated build for MIPS Big Endian (mips-unknown-linux-musl)
+            
+            Built from commit: ${{ github.sha }}
+            Build time: ${{ steps.tag.outputs.tag_name }}
+          files: |
+            vibetorrent-mips-${{ steps.tag.outputs.tag_name }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
