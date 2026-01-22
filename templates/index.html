@@ -145,12 +145,12 @@
                            hx-include="[name='search']">
                 </div>
                 
-                <!-- Stats -->
+                <!-- Stats (hidden on mobile) -->
                 <div id="stats-container" 
                      hx-get="/stats" 
                      hx-trigger="every 3s"
                      hx-swap="innerHTML"
-                     class="flex items-center gap-8">
+                     class="hidden lg:flex items-center gap-8">
                     {% include "partials/stats.html" %}
                 </div>
                 
@@ -166,8 +166,19 @@
         
         <!-- Torrent List -->
         <div class="flex-1 overflow-auto">
-            <!-- Table Header -->
-            <div class="sticky top-0 bg-slate-950 border-b border-slate-800 z-10">
+            <!-- Mobile Header -->
+            <div class="lg:hidden sticky top-0 bg-slate-950 border-b border-slate-800 z-10 px-4 py-3 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-white">Transferler</h2>
+                <button class="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+                    </svg>
+                    Sırala
+                </button>
+            </div>
+            
+            <!-- Table Header (Desktop only) -->
+            <div class="hidden lg:block sticky top-0 bg-slate-950 border-b border-slate-800 z-10">
                 <div class="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     <button class="col-span-5 flex items-center gap-1 hover:text-white transition-colors cursor-pointer sort-header"
                             onclick="toggleSort(this, 'name')"
@@ -353,6 +364,31 @@
                 closeSidebar();
             }
         });
+    });
+    
+    // Mobile card action menu toggle
+    function toggleMobileMenu(btn) {
+        const card = btn.closest('.lg\\:hidden');
+        const actions = card.querySelector('.mobile-actions');
+        
+        // Close all other open menus
+        document.querySelectorAll('.mobile-actions:not(.hidden)').forEach(menu => {
+            if (menu !== actions) {
+                menu.classList.add('hidden');
+            }
+        });
+        
+        // Toggle this menu
+        actions.classList.toggle('hidden');
+    }
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.lg\\:hidden')) {
+            document.querySelectorAll('.mobile-actions:not(.hidden)').forEach(menu => {
+                menu.classList.add('hidden');
+            });
+        }
     });
 </script>
 {% endblock %}

@@ -68,6 +68,7 @@ pub struct TorrentView {
     pub down_rate: String,
     pub up_rate: String,
     pub eta: String,
+    pub ratio: String,
     pub is_paused: bool,
     pub is_starred: bool,
 }
@@ -86,6 +87,7 @@ impl TorrentView {
             down_rate: torrent.down_rate_formatted(),
             up_rate: torrent.up_rate_formatted(),
             eta: torrent.eta().unwrap_or_else(|| "∞".to_string()),
+            ratio: format!("{:.1}", torrent.ratio),
             is_paused: torrent.state == TorrentState::Paused,
             is_starred,
         }
