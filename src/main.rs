@@ -115,6 +115,7 @@ async fn setup_page(error: Option<String>) -> Html<String> {
         scgi_socket: config.scgi_socket,
         bind_address: config.bind_address,
         error,
+        cache_version: crate::templates::CACHE_VERSION.clone(),
     };
     Html(template.render().unwrap_or_default())
 }

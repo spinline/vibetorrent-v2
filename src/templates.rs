@@ -1,8 +1,18 @@
 use askama::Template;
 use crate::rtorrent::{Torrent, GlobalStats, TorrentState};
+use std::sync::LazyLock;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[allow(unused_imports)]
 use TorrentState as _TS; // Used in from_torrent comparison
+
+// Cache version - auto-generated on app start for cache busting
+pub static CACHE_VERSION: LazyLock<String> = LazyLock::new(|| {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs().to_string())
+        .unwrap_or_else(|_| "1".to_string())
+});
 
 #[derive(Template)]
 #[template(path = "setup.html")]
@@ -10,6 +20,7 @@ pub struct SetupTemplate {
     pub scgi_socket: String,
     pub bind_address: String,
     pub error: Option<String>,
+    pub cache_version: String,
 }
 
 #[derive(Template)]
@@ -22,6 +33,7 @@ pub struct IndexTemplate {
     pub seeding_count: usize,
     pub paused_count: usize,
     pub rtorrent_version: String,
+    pub cache_version: String,
 }
 
 #[derive(Template)]

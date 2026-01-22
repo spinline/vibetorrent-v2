@@ -54,6 +54,7 @@ pub async fn index(
         seeding_count,
         paused_count,
         rtorrent_version,
+        cache_version: crate::templates::CACHE_VERSION.clone(),
     };
     
     Ok(Html(template.render().map_err(|e| AppError::TemplateError(e.to_string()))?))
