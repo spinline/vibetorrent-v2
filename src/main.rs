@@ -7,15 +7,43 @@ mod templates;
 use axum::{
     routing::{get, post},
     Router,
+    response::Response,
+    http::{header, StatusCode},
+    extract::Path,
+    body::Body,
 };
+use rust_embed::Embed;
 use std::sync::Arc;
-use tower_http::{
-    compression::CompressionLayer,
-    services::ServeDir,
-};
+use tower_http::compression::CompressionLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::state::AppState;
+
+// Embed static files into the binary
+#[derive(Embed)]
+#[folder = "static/"]
+struct StaticFiles;
+
+// Handler to serve embedded static files
+async fn serve_static(Path(path): Path<String>) -> Response<Body> {
+    let path = path.as_str();
+    
+    match StaticFiles::get(path) {
+        Some(content) => {
+            let mime = mime_guess::from_path(path).first_or_octet_stream();
+            Response::builder()
+                .status(StatusCode::OK)
+                .header(header::CONTENT_TYPE, mime.as_ref())
+                .header(header::CACHE_CONTROL, "public, max-age=31536000")
+                .body(Body::from(content.data.into_owned()))
+                .unwrap()
+        }
+        None => Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(Body::from("Not Found"))
+            .unwrap(),
+    }
+}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -56,8 +84,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/add-torrent", post(routes::add_torrent))
         // Stats
         .route("/stats", get(routes::stats_partial))
-        // Static files
-        .nest_service("/static", ServeDir::new("static"))
+        // Static files (embedded in binary)
+        .route("/static/*path", get(serve_static))
         // State and middleware
         .with_state(state)
         .layer(CompressionLayer::new());

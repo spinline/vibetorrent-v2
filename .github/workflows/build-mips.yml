@@ -40,11 +40,9 @@ jobs:
 
       - name: Prepare release artifacts
         run: |
-          mkdir -p release
-          cp target/mips-unknown-linux-musl/release/vibetorrent release/
-          cp -r templates release/
-          cp -r static release/
-          cd release && tar -czvf ../vibetorrent-mips-${{ steps.tag.outputs.tag_name }}.tar.gz .
+          cp target/mips-unknown-linux-musl/release/vibetorrent vibetorrent-mips
+          gzip -9 vibetorrent-mips
+          mv vibetorrent-mips.gz vibetorrent-mips-${{ steps.tag.outputs.tag_name }}.gz
 
       - name: Create Git tag
         run: |
@@ -61,9 +59,11 @@ jobs:
           body: |
             Automated build for MIPS Big Endian (mips-unknown-linux-musl)
             
+            **Single binary** - templates and static files embedded.
+            
             Built from commit: ${{ github.sha }}
             Build time: ${{ steps.tag.outputs.tag_name }}
           files: |
-            vibetorrent-mips-${{ steps.tag.outputs.tag_name }}.tar.gz
+            vibetorrent-mips-${{ steps.tag.outputs.tag_name }}.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
