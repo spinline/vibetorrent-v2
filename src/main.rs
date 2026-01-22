@@ -142,6 +142,20 @@ async fn setup_post(
             .unwrap();
     }
     
+    // Test rtorrent connection before saving
+    let client = crate::rtorrent::RtorrentClient::new(config.scgi_socket.clone());
+    if !client.test_connection().await {
+        let html = setup_page(Some(format!(
+            "Cannot connect to rtorrent at '{}'. Please check the socket path and ensure rtorrent is running.",
+            config.scgi_socket
+        ))).await;
+        return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .header(header::CONTENT_TYPE, "text/html")
+            .body(Body::from(html.0))
+            .unwrap();
+    }
+    
     // Save config to file
     if let Err(e) = config.save() {
         let html = setup_page(Some(e)).await;
