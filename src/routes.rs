@@ -12,12 +12,14 @@ use crate::rtorrent::{TorrentState, GlobalStats};
 use crate::state::AppState;
 use crate::templates::{
     IndexTemplate, TorrentListTemplate, TorrentRowTemplate, 
-    AddTorrentModalTemplate, StatsTemplate, TorrentView,
+    AddTorrentModalTemplate, StatsTemplate, TorrentView, SidebarCountsTemplate,
 };
 
 #[derive(Debug, Deserialize)]
 pub struct FilterQuery {
     pub search: Option<String>,
+    pub sort: Option<String>,
+    pub order: Option<String>,
 }
 
 /// Main index page - full SSR
@@ -63,12 +65,51 @@ pub async fn torrents_list(
     State(state): State<Arc<AppState>>,
     Query(query): Query<FilterQuery>,
 ) -> Result<impl IntoResponse> {
-    let mut torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
+    let all_torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
+    let mut torrents = all_torrents.clone();
     
     // Apply search filter
     if let Some(search) = &query.search {
         let search_lower = search.to_lowercase();
         torrents.retain(|t| t.name.to_lowercase().contains(&search_lower));
+    }
+    
+    // Apply sorting
+    let is_desc = query.order.as_deref() != Some("asc");
+    if let Some(sort) = &query.sort {
+        match sort.as_str() {
+            "name" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.name.to_lowercase().cmp(&b.name.to_lowercase());
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            "size" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.size_bytes.cmp(&b.size_bytes);
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            "progress" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.progress_percent().partial_cmp(&b.progress_percent()).unwrap_or(std::cmp::Ordering::Equal);
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            "down_rate" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.down_rate.cmp(&b.down_rate);
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            "up_rate" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.up_rate.cmp(&b.up_rate);
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            _ => {}
+        }
     }
     
     let mut torrent_views = Vec::new();
@@ -77,13 +118,29 @@ pub async fn torrents_list(
         torrent_views.push(TorrentView::from_torrent(t, is_starred));
     }
     
-    let template = TorrentListTemplate {
+    // Calculate counts from all torrents (not filtered)
+    let total_count = all_torrents.len();
+    let downloading_count = all_torrents.iter().filter(|t| t.state == TorrentState::Downloading).count();
+    let seeding_count = all_torrents.iter().filter(|t| t.state == TorrentState::Seeding).count();
+    let paused_count = all_torrents.iter().filter(|t| t.state == TorrentState::Paused).count();
+    
+    let list_template = TorrentListTemplate {
         torrents: torrent_views,
         filter: "all".to_string(),
         total_count: torrents.len(),
     };
     
-    Ok(Html(template.render().map_err(|e| AppError::TemplateError(e.to_string()))?))
+    let counts_template = SidebarCountsTemplate {
+        total_count,
+        downloading_count,
+        seeding_count,
+        paused_count,
+    };
+    
+    let list_html = list_template.render().map_err(|e| AppError::TemplateError(e.to_string()))?;
+    let counts_html = counts_template.render().map_err(|e| AppError::TemplateError(e.to_string()))?;
+    
+    Ok(Html(format!("{}{}", list_html, counts_html)))
 }
 
 /// Get filtered torrent list
@@ -92,7 +149,8 @@ pub async fn torrents_filtered(
     Path(filter): Path<String>,
     Query(query): Query<FilterQuery>,
 ) -> Result<impl IntoResponse> {
-    let mut torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
+    let all_torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
+    let mut torrents = all_torrents.clone();
     
     // Apply status filter
     match filter.as_str() {
@@ -108,19 +166,73 @@ pub async fn torrents_filtered(
         torrents.retain(|t| t.name.to_lowercase().contains(&search_lower));
     }
     
+    // Apply sorting
+    let is_desc = query.order.as_deref() != Some("asc");
+    if let Some(sort) = &query.sort {
+        match sort.as_str() {
+            "name" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.name.to_lowercase().cmp(&b.name.to_lowercase());
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            "size" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.size_bytes.cmp(&b.size_bytes);
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            "progress" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.progress_percent().partial_cmp(&b.progress_percent()).unwrap_or(std::cmp::Ordering::Equal);
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            "down_rate" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.down_rate.cmp(&b.down_rate);
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            "up_rate" => {
+                torrents.sort_by(|a, b| {
+                    let cmp = a.up_rate.cmp(&b.up_rate);
+                    if is_desc { cmp.reverse() } else { cmp }
+                });
+            }
+            _ => {}
+        }
+    }
+    
     let mut torrent_views = Vec::new();
     for t in &torrents {
         let is_starred = state.is_starred(&t.hash).await;
         torrent_views.push(TorrentView::from_torrent(t, is_starred));
     }
     
-    let template = TorrentListTemplate {
+    // Calculate counts from all torrents (not filtered)
+    let total_count = all_torrents.len();
+    let downloading_count = all_torrents.iter().filter(|t| t.state == TorrentState::Downloading).count();
+    let seeding_count = all_torrents.iter().filter(|t| t.state == TorrentState::Seeding).count();
+    let paused_count = all_torrents.iter().filter(|t| t.state == TorrentState::Paused).count();
+    
+    let list_template = TorrentListTemplate {
         torrents: torrent_views,
         filter,
         total_count: torrents.len(),
     };
     
-    Ok(Html(template.render().map_err(|e| AppError::TemplateError(e.to_string()))?))
+    let counts_template = SidebarCountsTemplate {
+        total_count,
+        downloading_count,
+        seeding_count,
+        paused_count,
+    };
+    
+    let list_html = list_template.render().map_err(|e| AppError::TemplateError(e.to_string()))?;
+    let counts_html = counts_template.render().map_err(|e| AppError::TemplateError(e.to_string()))?;
+    
+    Ok(Html(format!("{}{}", list_html, counts_html)))
 }
 
 /// Pause a torrent

@@ -28,11 +28,9 @@
             </div>
             
             <a href="#"
-               hx-get="/torrents"
-               hx-target="#torrent-list"
-               hx-swap="innerHTML"
-               class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-white bg-slate-800 mb-1 cursor-pointer transition-colors"
-               _="on click remove .bg-slate-800 from .nav-item remove .text-white from .nav-item add .text-slate-300 to .nav-item then add .bg-slate-800 to me add .text-white to me remove .text-slate-300 from me">
+               onclick="setFilter('all'); return false;"
+               class="nav-item active"
+               data-filter="all">
                 <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -43,11 +41,9 @@
             </a>
             
             <a href="#"
-               hx-get="/torrents/filter/downloading"
-               hx-target="#torrent-list"
-               hx-swap="innerHTML"
-               class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 mb-1 cursor-pointer transition-colors"
-               _="on click remove .bg-slate-800 from .nav-item remove .text-white from .nav-item add .text-slate-300 to .nav-item then add .bg-slate-800 to me add .text-white to me remove .text-slate-300 from me">
+               onclick="setFilter('downloading'); return false;"
+               class="nav-item"
+               data-filter="downloading">
                 <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -58,11 +54,9 @@
             </a>
             
             <a href="#"
-               hx-get="/torrents/filter/seeding"
-               hx-target="#torrent-list"
-               hx-swap="innerHTML"
-               class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 mb-1 cursor-pointer transition-colors"
-               _="on click remove .bg-slate-800 from .nav-item remove .text-white from .nav-item add .text-slate-300 to .nav-item then add .bg-slate-800 to me add .text-white to me remove .text-slate-300 from me">
+               onclick="setFilter('seeding'); return false;"
+               class="nav-item"
+               data-filter="seeding">
                 <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/>
@@ -73,13 +67,11 @@
             </a>
             
             <a href="#"
-               hx-get="/torrents/filter/paused"
-               hx-target="#torrent-list"
-               hx-swap="innerHTML"
-               class="nav-item flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 mb-1 cursor-pointer transition-colors"
-               _="on click remove .bg-slate-800 from .nav-item remove .text-white from .nav-item add .text-slate-300 to .nav-item then add .bg-slate-800 to me add .text-white to me remove .text-slate-300 from me">
+               onclick="setFilter('paused'); return false;"
+               class="nav-item"
+               data-filter="paused">
                 <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span>Paused</span>
@@ -163,17 +155,52 @@
             <!-- Table Header -->
             <div class="sticky top-0 bg-slate-950 border-b border-slate-800 z-10">
                 <div class="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <div class="col-span-5 flex items-center gap-2">
+                    <button class="col-span-5 flex items-center gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                            onclick="toggleSort(this, 'name')"
+                            data-sort="name"
+                            data-order="asc">
                         <span>Name</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
                         </svg>
-                    </div>
-                    <div class="col-span-1 text-right">Size</div>
-                    <div class="col-span-2 text-center">Progress</div>
+                    </button>
+                    <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                            onclick="toggleSort(this, 'size')"
+                            data-sort="size"
+                            data-order="desc">
+                        <span>Size</span>
+                        <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                        </svg>
+                    </button>
+                    <button class="col-span-2 text-center flex items-center justify-center gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                            onclick="toggleSort(this, 'progress')"
+                            data-sort="progress"
+                            data-order="desc">
+                        <span>Progress</span>
+                        <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                        </svg>
+                    </button>
                     <div class="col-span-1 text-center">Status</div>
-                    <div class="col-span-1 text-right">↓ Speed</div>
-                    <div class="col-span-1 text-right">↑ Speed</div>
+                    <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                            onclick="toggleSort(this, 'down_rate')"
+                            data-sort="down_rate"
+                            data-order="desc">
+                        <span>↓ Speed</span>
+                        <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                        </svg>
+                    </button>
+                    <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                            onclick="toggleSort(this, 'up_rate')"
+                            data-sort="up_rate"
+                            data-order="desc">
+                        <span>↑ Speed</span>
+                        <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                        </svg>
+                    </button>
                     <div class="col-span-1 text-right">ETA</div>
                 </div>
             </div>
@@ -190,4 +217,81 @@
         </footer>
     </main>
 </div>
+
+<script>
+    // Current filter and sort state
+    let currentFilter = 'all';
+    let currentSort = null;
+    let currentOrder = 'desc';
+    
+    // Icon paths - simple chevrons
+    const iconDown = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>';
+    const iconUp = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>';
+    const iconNeutral = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>';
+    
+    function buildUrl() {
+        let url = currentFilter === 'all' ? '/torrents' : `/torrents/filter/${currentFilter}`;
+        if (currentSort) {
+            url += `?sort=${currentSort}&order=${currentOrder}`;
+        }
+        return url;
+    }
+    
+    function setFilter(filter) {
+        currentFilter = filter;
+        
+        // Update active state on nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.filter === filter) {
+                item.classList.add('active');
+            }
+        });
+        
+        // Update the auto-refresh URL
+        const torrentList = document.getElementById('torrent-list');
+        const url = buildUrl();
+        torrentList.setAttribute('hx-get', url);
+        htmx.process(torrentList);
+        
+        // Make the request
+        htmx.ajax('GET', url, {target: '#torrent-list', swap: 'innerHTML'});
+    }
+    
+    function toggleSort(btn, sortField) {
+        // Toggle order if same field clicked again
+        if (currentSort === sortField) {
+            currentOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+        } else {
+            currentSort = sortField;
+            // Default order: name is asc, others are desc
+            currentOrder = sortField === 'name' ? 'asc' : 'desc';
+        }
+        
+        // Reset all buttons to neutral state
+        document.querySelectorAll('.sort-header').forEach(b => {
+            b.classList.remove('text-white');
+            const icon = b.querySelector('.sort-icon');
+            icon.classList.remove('opacity-100');
+            icon.classList.add('opacity-50');
+            icon.innerHTML = iconNeutral;
+        });
+        
+        // Update active button
+        btn.classList.add('text-white');
+        const activeIcon = btn.querySelector('.sort-icon');
+        activeIcon.classList.remove('opacity-50');
+        activeIcon.classList.add('opacity-100');
+        activeIcon.innerHTML = currentOrder === 'desc' ? iconDown : iconUp;
+        
+        // Update the auto-refresh URL (considering current filter)
+        const torrentList = document.getElementById('torrent-list');
+        const url = buildUrl();
+        torrentList.setAttribute('hx-get', url);
+        htmx.process(torrentList);
+        
+        // Make the request
+        htmx.ajax('GET', url, {target: '#torrent-list', swap: 'innerHTML'});
+    }
+</script>
 {% endblock %}
