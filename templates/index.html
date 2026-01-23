@@ -409,16 +409,28 @@
         }
     });
     
-    // Update footer count after HTMX swaps
+    function updateFooterCount() {
+        const countEl = document.querySelector('#torrent-list [data-torrent-count]');
+        const footer = document.getElementById('torrent-footer');
+        if (countEl && footer) {
+            const count = countEl.getAttribute('data-torrent-count');
+            footer.textContent = 'Showing ' + count + ' torrents';
+        }
+    }
+
+    // Update footer count after HTMX swaps (incl. SSE-driven swaps)
     document.body.addEventListener('htmx:afterSwap', (e) => {
-        if (e.detail.target.id === 'torrent-list') {
-            const countEl = document.querySelector('[data-torrent-count]');
-            const footer = document.getElementById('torrent-footer');
-            if (countEl && footer) {
-                const count = countEl.getAttribute('data-torrent-count');
-                footer.textContent = 'Showing ' + count + ' torrents';
-            }
+        const target = e.detail && e.detail.target;
+        if (target && (target.id === 'torrent-list' || (target.closest && target.closest('#torrent-list')))) {
+            updateFooterCount();
         }
     });
+
+    // Some SSE updates may not trigger afterSwap consistently across browsers.
+    document.body.addEventListener('htmx:sseMessage', () => {
+        setTimeout(updateFooterCount, 0);
+    });
+
+    document.addEventListener('DOMContentLoaded', updateFooterCount);
 </script>
 {% endblock %}
