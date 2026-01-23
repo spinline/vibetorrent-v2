@@ -44,7 +44,7 @@ pub async fn torrent_events(
             };
             
             let event = Event::default()
-                .event("torrent-update")
+                .event("torrents")
                 .data(html);
             
             Some((Ok(event), (state, query, ticker)))
@@ -75,7 +75,7 @@ pub async fn torrent_filtered_events(
             };
             
             let event = Event::default()
-                .event("torrent-update")
+                .event("torrents")
                 .data(html);
             
             Some((Ok(event), (state, filter, query, ticker)))
@@ -109,7 +109,7 @@ pub async fn stats_events(
             let html = template.render().unwrap_or_default();
             
             let event = Event::default()
-                .event("stats-update")
+                .event("stats")
                 .data(html);
             
             Some((Ok(event), (state, ticker)))
