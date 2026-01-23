@@ -11,18 +11,16 @@ use axum::{
     response::sse::{Event, KeepAlive, Sse},
 };
 use futures::stream::{self, Stream};
+use futures::StreamExt;
 use std::{convert::Infallible, sync::Arc, time::Duration};
-use tokio::time::interval;
+use tokio_stream::wrappers::BroadcastStream;
 
 use crate::error::AppError;
 use crate::routes::FilterQuery;
-use crate::rtorrent::{GlobalStats, TorrentState};
+use crate::rtorrent::TorrentState;
 use crate::state::AppState;
 use crate::templates::{SidebarCountsTemplate, StatsTemplate, TorrentListTemplate, TorrentView};
 use askama::Template;
-
-/// SSE update interval in seconds
-const SSE_UPDATE_INTERVAL: u64 = 2;
 
 /// SSE endpoint for torrent list updates
 /// 
@@ -32,24 +30,39 @@ pub async fn torrent_events(
     State(state): State<Arc<AppState>>,
     Query(query): Query<FilterQuery>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let stream = stream::unfold(
-        (state, query, interval(Duration::from_secs(SSE_UPDATE_INTERVAL))),
-        |(state, query, mut ticker)| async move {
-            ticker.tick().await;
-            
-            // Get and process torrents
-            let html = match generate_torrent_html(&state, &query).await {
+    let initial = match state.latest_torrents().await {
+        Some(torrents) => {
+            let html = match render_torrents_html(&state, &query, None, &torrents).await {
                 Ok(html) => html,
                 Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
             };
-            
-            let event = Event::default()
-                .event("torrents")
-                .data(html);
-            
-            Some((Ok(event), (state, query, ticker)))
-        },
-    );
+            Some(Ok(Event::default().event("torrents").data(html)))
+        }
+        None => None,
+    };
+
+    let updates = BroadcastStream::new(state.subscribe_torrents()).filter_map({
+        let state = state.clone();
+        let query = query.clone();
+        move |msg| {
+            let state = state.clone();
+            let query = query.clone();
+            async move {
+                match msg {
+                    Ok(torrents) => {
+                        let html = match render_torrents_html(&state, &query, None, &torrents).await {
+                            Ok(html) => html,
+                            Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+                        };
+                        Some(Ok(Event::default().event("torrents").data(html)))
+                    }
+                    Err(_) => None,
+                }
+            }
+        }
+    });
+
+    let stream = stream::iter(initial.into_iter()).chain(updates);
 
     Sse::new(stream).keep_alive(
         KeepAlive::new()
@@ -64,23 +77,41 @@ pub async fn torrent_filtered_events(
     axum::extract::Path(filter): axum::extract::Path<String>,
     Query(query): Query<FilterQuery>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let stream = stream::unfold(
-        (state, filter, query, interval(Duration::from_secs(SSE_UPDATE_INTERVAL))),
-        |(state, filter, query, mut ticker)| async move {
-            ticker.tick().await;
-            
-            let html = match generate_filtered_torrent_html(&state, &filter, &query).await {
+    let initial = match state.latest_torrents().await {
+        Some(torrents) => {
+            let html = match render_torrents_html(&state, &query, Some(&filter), &torrents).await {
                 Ok(html) => html,
                 Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
             };
-            
-            let event = Event::default()
-                .event("torrents")
-                .data(html);
-            
-            Some((Ok(event), (state, filter, query, ticker)))
-        },
-    );
+            Some(Ok(Event::default().event("torrents").data(html)))
+        }
+        None => None,
+    };
+
+    let updates = BroadcastStream::new(state.subscribe_torrents()).filter_map({
+        let state = state.clone();
+        let query = query.clone();
+        let filter = filter.clone();
+        move |msg| {
+            let state = state.clone();
+            let query = query.clone();
+            let filter = filter.clone();
+            async move {
+                match msg {
+                    Ok(torrents) => {
+                        let html = match render_torrents_html(&state, &query, Some(&filter), &torrents).await {
+                            Ok(html) => html,
+                            Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+                        };
+                        Some(Ok(Event::default().event("torrents").data(html)))
+                    }
+                    Err(_) => None,
+                }
+            }
+        }
+    });
+
+    let stream = stream::iter(initial.into_iter()).chain(updates);
 
     Sse::new(stream).keep_alive(
         KeepAlive::new()
@@ -93,28 +124,27 @@ pub async fn torrent_filtered_events(
 pub async fn stats_events(
     State(state): State<Arc<AppState>>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    let stream = stream::unfold(
-        (state, interval(Duration::from_secs(SSE_UPDATE_INTERVAL))),
-        |(state, mut ticker)| async move {
-            ticker.tick().await;
-            
-            let stats = state.rtorrent.get_global_stats().await.unwrap_or_else(|_| GlobalStats {
-                down_rate: 0,
-                up_rate: 0,
-                free_disk_space: 0,
-                active_peers: 0,
-            });
-            
-            let template = StatsTemplate { stats };
+    let initial = match state.latest_stats().await {
+        Some(stats) => {
+            let template = StatsTemplate { stats: (*stats).clone() };
             let html = template.render().unwrap_or_default();
-            
-            let event = Event::default()
-                .event("stats")
-                .data(html);
-            
-            Some((Ok(event), (state, ticker)))
-        },
-    );
+            Some(Ok(Event::default().event("stats").data(html)))
+        }
+        None => None,
+    };
+
+    let updates = BroadcastStream::new(state.subscribe_stats()).filter_map(|msg| async move {
+        match msg {
+            Ok(stats) => {
+                let template = StatsTemplate { stats: (*stats).clone() };
+                let html = template.render().unwrap_or_default();
+                Some(Ok(Event::default().event("stats").data(html)))
+            }
+            Err(_) => None,
+        }
+    });
+
+    let stream = stream::iter(initial.into_iter()).chain(updates);
 
     Sse::new(stream).keep_alive(
         KeepAlive::new()
@@ -123,84 +153,47 @@ pub async fn stats_events(
     )
 }
 
-/// Generate HTML for torrent list with filtering and sorting
-async fn generate_torrent_html(
+/// Render torrent list HTML from a shared snapshot, applying optional filter/search/sort.
+async fn render_torrents_html(
     state: &Arc<AppState>,
     query: &FilterQuery,
+    filter: Option<&str>,
+    all_torrents: &[crate::rtorrent::Torrent],
 ) -> Result<String, AppError> {
-    let all_torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
-    let mut torrents = all_torrents.clone();
-    
-    // Apply search filter
-    if let Some(search) = &query.search {
-        let search_lower = search.to_lowercase();
-        torrents.retain(|t| t.name.to_lowercase().contains(&search_lower));
-    }
-    
-    // Apply sorting
-    apply_sorting(&mut torrents, query);
-    
-    // Convert to views
-    let mut torrent_views = Vec::with_capacity(torrents.len());
-    for t in &torrents {
-        let is_starred = state.is_starred(&t.hash).await;
-        torrent_views.push(TorrentView::from_torrent(t, is_starred));
-    }
-    
-    // Calculate counts from all torrents
-    let counts = calculate_counts(&all_torrents);
-    
-    // Render templates
-    let list_template = TorrentListTemplate { torrents: torrent_views };
-    let counts_template = SidebarCountsTemplate {
-        total_count: counts.total,
-        downloading_count: counts.downloading,
-        seeding_count: counts.seeding,
-        paused_count: counts.paused,
-    };
-    
-    let list_html = list_template.render().map_err(|e| AppError::TemplateError(e.to_string()))?;
-    let counts_html = counts_template.render().map_err(|e| AppError::TemplateError(e.to_string()))?;
-    
-    Ok(format!("{}{}", list_html, counts_html))
-}
+    let mut torrents = all_torrents.to_vec();
 
-/// Generate HTML for filtered torrent list
-async fn generate_filtered_torrent_html(
-    state: &Arc<AppState>,
-    filter: &str,
-    query: &FilterQuery,
-) -> Result<String, AppError> {
-    let all_torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
-    let mut torrents = all_torrents.clone();
-    
     // Apply status filter
-    match filter {
-        "downloading" => torrents.retain(|t| t.state == TorrentState::Downloading),
-        "seeding" => torrents.retain(|t| t.state == TorrentState::Seeding),
-        "paused" => torrents.retain(|t| t.state == TorrentState::Paused),
-        _ => {} // "all" - no filter
+    if let Some(filter) = filter {
+        match filter {
+            "downloading" => torrents.retain(|t| t.state == TorrentState::Downloading),
+            "seeding" => torrents.retain(|t| t.state == TorrentState::Seeding),
+            "paused" => torrents.retain(|t| t.state == TorrentState::Paused),
+            _ => {}
+        }
     }
-    
+
     // Apply search filter
     if let Some(search) = &query.search {
         let search_lower = search.to_lowercase();
         torrents.retain(|t| t.name.to_lowercase().contains(&search_lower));
     }
-    
+
     // Apply sorting
     apply_sorting(&mut torrents, query);
-    
+
+    // Starred set snapshot (avoid per-row await)
+    let starred = state.starred_torrents.read().await.clone();
+
     // Convert to views
     let mut torrent_views = Vec::with_capacity(torrents.len());
     for t in &torrents {
-        let is_starred = state.is_starred(&t.hash).await;
+        let is_starred = starred.contains(&t.hash);
         torrent_views.push(TorrentView::from_torrent(t, is_starred));
     }
-    
-    // Calculate counts from all torrents
-    let counts = calculate_counts(&all_torrents);
-    
+
+    // Calculate counts from all torrents (not filtered)
+    let counts = calculate_counts(all_torrents);
+
     // Render templates
     let list_template = TorrentListTemplate { torrents: torrent_views };
     let counts_template = SidebarCountsTemplate {
@@ -209,10 +202,10 @@ async fn generate_filtered_torrent_html(
         seeding_count: counts.seeding,
         paused_count: counts.paused,
     };
-    
+
     let list_html = list_template.render().map_err(|e| AppError::TemplateError(e.to_string()))?;
     let counts_html = counts_template.render().map_err(|e| AppError::TemplateError(e.to_string()))?;
-    
+
     Ok(format!("{}{}", list_html, counts_html))
 }
 

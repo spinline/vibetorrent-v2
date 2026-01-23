@@ -15,7 +15,7 @@ use crate::templates::{
     AddTorrentModalTemplate, StatsTemplate, TorrentView, SidebarCountsTemplate,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct FilterQuery {
     pub search: Option<String>,
     pub sort: Option<String>,
