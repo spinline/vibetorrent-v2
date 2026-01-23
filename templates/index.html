@@ -137,12 +137,7 @@
                     <input type="text" 
                            name="search"
                            placeholder="Filter torrents..."
-                           class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                           hx-get="/torrents"
-                           hx-trigger="keyup changed delay:300ms"
-                           hx-target="#torrent-list"
-                           hx-swap="innerHTML"
-                           hx-include="[name='search']">
+                              class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 </div>
                 
                 <!-- Stats (hidden on mobile) -->
@@ -276,22 +271,6 @@
         return url;
     }
     
-    function buildUrl() {
-        let url = currentFilter === 'all' ? '/torrents' : `/torrents/filter/${currentFilter}`;
-        const params = new URLSearchParams();
-        if (currentSort) {
-            params.set('sort', currentSort);
-            params.set('order', currentOrder);
-        }
-        if (currentSearch) {
-            params.set('search', currentSearch);
-        }
-        if (params.toString()) {
-            url += '?' + params.toString();
-        }
-        return url;
-    }
-    
     function reconnectSse() {
         const torrentList = document.getElementById('torrent-list');
         const url = buildSseUrl();
@@ -317,12 +296,15 @@
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.querySelector('input[name="search"]');
         if (searchInput) {
+            let searchDebounceTimer = null;
             searchInput.addEventListener('input', function() {
                 currentSearch = this.value;
-                // Immediate request for search, then reconnect SSE with new params
-                htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'}).then(() => {
+                if (searchDebounceTimer) {
+                    clearTimeout(searchDebounceTimer);
+                }
+                searchDebounceTimer = setTimeout(() => {
                     reconnectSse();
-                });
+                }, 300);
             });
         }
     });
@@ -338,10 +320,8 @@
             }
         });
         
-        // Make immediate request then reconnect SSE
-        htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'}).then(() => {
-            reconnectSse();
-        });
+        // SSE is the single source of truth for list updates
+        reconnectSse();
     }
     
     function toggleSort(btn, sortField) {
@@ -370,10 +350,8 @@
         activeIcon.classList.add('opacity-100');
         activeIcon.innerHTML = currentOrder === 'desc' ? iconDown : iconUp;
         
-        // Make immediate request then reconnect SSE
-        htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'}).then(() => {
-            reconnectSse();
-        });
+        // SSE is the single source of truth for list updates
+        reconnectSse();
     }
     
     // Mobile sidebar toggle functions
