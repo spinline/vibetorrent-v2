@@ -147,8 +147,9 @@
                 
                 <!-- Stats (hidden on mobile) -->
                 <div id="stats-container" 
-                     hx-get="/stats" 
-                     hx-trigger="every 3s"
+                     hx-ext="sse"
+                     sse-connect="/events/stats"
+                     sse-swap="stats"
                      hx-swap="innerHTML"
                      class="hidden lg:flex items-center gap-8">
                     {% include "partials/stats.html" %}
@@ -231,7 +232,11 @@
             </div>
             
             <!-- Torrent Rows -->
-            <div id="torrent-list" hx-get="/torrents" hx-trigger="every 5s" hx-swap="innerHTML">
+            <div id="torrent-list" 
+                 hx-ext="sse"
+                 sse-connect="/events/torrents"
+                 sse-swap="torrents"
+                 hx-swap="innerHTML">
                 {% include "partials/torrent_list.html" %}
             </div>
         </div>
@@ -255,6 +260,22 @@
     const iconUp = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>';
     const iconNeutral = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>';
     
+    function buildSseUrl() {
+        let url = currentFilter === 'all' ? '/events/torrents' : `/events/torrents/filter/${currentFilter}`;
+        const params = new URLSearchParams();
+        if (currentSort) {
+            params.set('sort', currentSort);
+            params.set('order', currentOrder);
+        }
+        if (currentSearch) {
+            params.set('search', currentSearch);
+        }
+        if (params.toString()) {
+            url += '?' + params.toString();
+        }
+        return url;
+    }
+    
     function buildUrl() {
         let url = currentFilter === 'all' ? '/torrents' : `/torrents/filter/${currentFilter}`;
         const params = new URLSearchParams();
@@ -271,10 +292,14 @@
         return url;
     }
     
-    function updateAutoRefresh() {
+    function updateSseConnection() {
         const torrentList = document.getElementById('torrent-list');
-        const url = buildUrl();
-        torrentList.setAttribute('hx-get', url);
+        const url = buildSseUrl();
+        
+        // Update SSE connection URL
+        torrentList.setAttribute('sse-connect', url);
+        
+        // Reconnect SSE by removing and re-adding the extension
         htmx.process(torrentList);
     }
     
@@ -284,7 +309,9 @@
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 currentSearch = this.value;
-                updateAutoRefresh();
+                // Immediate request for search, SSE will continue with new params
+                htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'});
+                updateSseConnection();
             });
         }
     });
@@ -300,9 +327,9 @@
             }
         });
         
-        // Update the auto-refresh URL and make request
-        updateAutoRefresh();
+        // Make immediate request and update SSE connection
         htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'});
+        updateSseConnection();
     }
     
     function toggleSort(btn, sortField) {
@@ -331,9 +358,9 @@
         activeIcon.classList.add('opacity-100');
         activeIcon.innerHTML = currentOrder === 'desc' ? iconDown : iconUp;
         
-        // Update the auto-refresh URL and make request
-        updateAutoRefresh();
+        // Make immediate request and update SSE connection
         htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'});
+        updateSseConnection();
     }
     
     // Mobile sidebar toggle functions

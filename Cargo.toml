@@ -26,6 +26,7 @@ quick-xml = "0.37"
 # Async utilities
 futures = "0.3"
 async-trait = "0.1"
+tokio-stream = "0.1"
 
 # Error handling
 thiserror = "2"

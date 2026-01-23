@@ -2,6 +2,7 @@ mod config;
 mod error;
 mod routes;
 mod rtorrent;
+mod sse;
 mod state;
 mod templates;
 
@@ -295,6 +296,38 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
         }
     }
     
+    // SSE handlers for real-time updates
+    async fn sse_torrents_handler(
+        State(shared): State<Arc<SharedState>>,
+        query: axum::extract::Query<routes::FilterQuery>,
+    ) -> Response<Body> {
+        if let Some(state) = shared.get_app_state().await {
+            sse::torrent_events(State(state), query).await.into_response()
+        } else {
+            Redirect::to("/setup").into_response()
+        }
+    }
+    
+    async fn sse_torrents_filtered_handler(
+        State(shared): State<Arc<SharedState>>,
+        Path(filter): Path<String>,
+        query: axum::extract::Query<routes::FilterQuery>,
+    ) -> Response<Body> {
+        if let Some(state) = shared.get_app_state().await {
+            sse::torrent_filtered_events(State(state), Path(filter), query).await.into_response()
+        } else {
+            Redirect::to("/setup").into_response()
+        }
+    }
+    
+    async fn sse_stats_handler(State(shared): State<Arc<SharedState>>) -> Response<Body> {
+        if let Some(state) = shared.get_app_state().await {
+            sse::stats_events(State(state)).await.into_response()
+        } else {
+            Redirect::to("/setup").into_response()
+        }
+    }
+    
     // Setup route for first-time or forced setup
     async fn setup_get_handler(
         State(_shared): State<Arc<SharedState>>,
@@ -322,6 +355,10 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
         .route("/add-torrent", post(add_torrent_handler))
         // Stats
         .route("/stats", get(stats_handler))
+        // SSE endpoints for real-time updates
+        .route("/events/torrents", get(sse_torrents_handler))
+        .route("/events/torrents/filter/{filter}", get(sse_torrents_filtered_handler))
+        .route("/events/stats", get(sse_stats_handler))
         // Static files (embedded in binary)
         .route("/static/{*path}", get(serve_static))
         // State
