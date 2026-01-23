@@ -292,15 +292,25 @@
         return url;
     }
     
-    function updateSseConnection() {
+    function reconnectSse() {
         const torrentList = document.getElementById('torrent-list');
         const url = buildSseUrl();
+        const content = torrentList.innerHTML;
         
-        // Update SSE connection URL
-        torrentList.setAttribute('sse-connect', url);
+        // Create new element with updated SSE URL
+        const newElement = document.createElement('div');
+        newElement.id = 'torrent-list';
+        newElement.setAttribute('hx-ext', 'sse');
+        newElement.setAttribute('sse-connect', url);
+        newElement.setAttribute('sse-swap', 'torrents');
+        newElement.setAttribute('hx-swap', 'innerHTML');
+        newElement.innerHTML = content;
         
-        // Reconnect SSE by removing and re-adding the extension
-        htmx.process(torrentList);
+        // Replace old element (this closes the old SSE connection)
+        torrentList.replaceWith(newElement);
+        
+        // Initialize HTMX on new element
+        htmx.process(newElement);
     }
     
     // Track search input changes
@@ -309,9 +319,10 @@
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 currentSearch = this.value;
-                // Immediate request for search, SSE will continue with new params
-                htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'});
-                updateSseConnection();
+                // Immediate request for search, then reconnect SSE with new params
+                htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'}).then(() => {
+                    reconnectSse();
+                });
             });
         }
     });
@@ -327,9 +338,10 @@
             }
         });
         
-        // Make immediate request and update SSE connection
-        htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'});
-        updateSseConnection();
+        // Make immediate request then reconnect SSE
+        htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'}).then(() => {
+            reconnectSse();
+        });
     }
     
     function toggleSort(btn, sortField) {
@@ -358,9 +370,10 @@
         activeIcon.classList.add('opacity-100');
         activeIcon.innerHTML = currentOrder === 'desc' ? iconDown : iconUp;
         
-        // Make immediate request and update SSE connection
-        htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'});
-        updateSseConnection();
+        // Make immediate request then reconnect SSE
+        htmx.ajax('GET', buildUrl(), {target: '#torrent-list', swap: 'innerHTML'}).then(() => {
+            reconnectSse();
+        });
     }
     
     // Mobile sidebar toggle functions
