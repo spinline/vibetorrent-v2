@@ -131,18 +131,18 @@
                 
                 <!-- Search -->
                 <div class="relative w-80 max-lg:flex-1">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                     <input type="text" 
                            id="search-input"
                            name="search"
                            placeholder="Filter torrents..."
-                           class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-10 py-2.5 max-lg:py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                           class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-9 py-2.5 max-lg:py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                     <!-- Clear button -->
                     <button id="search-clear-btn" 
                             onclick="clearSearch()" 
-                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-white rounded hidden">
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white hidden">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
