@@ -165,61 +165,48 @@
             <!-- Mobile Header -->
             <div class="lg:hidden sticky top-0 bg-slate-950 border-b border-slate-800 z-20 px-4 py-3 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-white">Transferler</h2>
-                <div class="relative">
-                    <button id="mobile-sort-btn" onclick="toggleMobileSortMenu()" class="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+                <button id="mobile-sort-btn" onclick="toggleMobileSortMenu()" class="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+                    </svg>
+                    <span id="mobile-sort-label">Sırala</span>
+                </button>
+            </div>
+
+            <!-- Mobile Sort Menu -->
+            <div id="mobile-sort-menu" class="lg:hidden fixed inset-0 z-50 hidden" onclick="closeMobileSortMenu()">
+                <div class="absolute inset-0 bg-black/40"></div>
+                <div class="absolute top-24 right-3 w-48 rounded-xl bg-slate-900 border border-slate-700/80 shadow-xl overflow-hidden" onclick="event.stopPropagation()">
+                    <button onclick="mobileSortSelect('name', 'asc')" data-sort="name" class="mobile-sort-option w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-800/80 text-left">
+                        <span class="text-slate-200 text-sm">İsim (A-Z)</span>
+                        <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>
-                        <span id="mobile-sort-label">Sırala</span>
                     </button>
-                    <!-- Mobile Sort Dropdown -->
-                    <div id="mobile-sort-menu" class="absolute right-0 top-full mt-1 w-44 py-1 rounded-lg bg-slate-800 border border-slate-700 shadow-lg z-50 hidden">
-                        <button onclick="mobileSortSelect('name', 'asc')" data-sort="name" class="mobile-sort-option w-full px-3 py-2 flex items-center gap-2 hover:bg-slate-700 text-left text-sm">
-                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h7m0 0l-3-3m3 3l-3 3"/>
-                            </svg>
-                            <span class="text-slate-200 flex-1">İsim (A-Z)</span>
-                            <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                        <button onclick="mobileSortSelect('size', 'desc')" data-sort="size" class="mobile-sort-option w-full px-3 py-2 flex items-center gap-2 hover:bg-slate-700 text-left text-sm">
-                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 3.6 4 8 4s8-2 8-4V7"/>
-                            </svg>
-                            <span class="text-slate-200 flex-1">Boyut</span>
-                            <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                        <button onclick="mobileSortSelect('progress', 'desc')" data-sort="progress" class="mobile-sort-option w-full px-3 py-2 flex items-center gap-2 hover:bg-slate-700 text-left text-sm">
-                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z"/>
-                            </svg>
-                            <span class="text-slate-200 flex-1">İlerleme</span>
-                            <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                        <button onclick="mobileSortSelect('down_rate', 'desc')" data-sort="down_rate" class="mobile-sort-option w-full px-3 py-2 flex items-center gap-2 hover:bg-slate-700 text-left text-sm">
-                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                            </svg>
-                            <span class="text-slate-200 flex-1">İndirme Hızı</span>
-                            <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                        <button onclick="mobileSortSelect('up_rate', 'desc')" data-sort="up_rate" class="mobile-sort-option w-full px-3 py-2 flex items-center gap-2 hover:bg-slate-700 text-left text-sm">
-                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                            </svg>
-                            <span class="text-slate-200 flex-1">Yükleme Hızı</span>
-                            <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                        </button>
-                    </div>
+                    <button onclick="mobileSortSelect('size', 'desc')" data-sort="size" class="mobile-sort-option w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-800/80 text-left">
+                        <span class="text-slate-200 text-sm">Boyut</span>
+                        <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button onclick="mobileSortSelect('progress', 'desc')" data-sort="progress" class="mobile-sort-option w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-800/80 text-left">
+                        <span class="text-slate-200 text-sm">İlerleme</span>
+                        <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button onclick="mobileSortSelect('down_rate', 'desc')" data-sort="down_rate" class="mobile-sort-option w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-800/80 text-left">
+                        <span class="text-slate-200 text-sm">İndirme Hızı</span>
+                        <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+                    <button onclick="mobileSortSelect('up_rate', 'desc')" data-sort="up_rate" class="mobile-sort-option w-full px-4 py-2.5 flex items-center justify-between hover:bg-slate-800/80 text-left">
+                        <span class="text-slate-200 text-sm">Yükleme Hızı</span>
+                        <svg class="mobile-sort-check w-4 h-4 text-emerald-400 hidden" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
             
