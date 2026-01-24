@@ -10,7 +10,7 @@
          onclick="closeSidebar()"></div>
     
     <!-- Sidebar -->
-    <aside id="sidebar" class="w-52 bg-slate-900 border-r border-slate-800 flex flex-col max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:-translate-x-full max-lg:transition-transform max-lg:duration-200">
+    <aside id="sidebar" class="w-[18rem] sm:w-[20rem] lg:w-52 bg-slate-900 border-r border-slate-800 flex flex-col max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:-translate-x-full max-lg:transition-transform max-lg:duration-200">
         <!-- Logo -->
         <div class="p-4 border-b border-slate-800">
             <div class="flex items-center gap-3">
@@ -119,44 +119,45 @@
     <main class="flex-1 flex flex-col">
         <!-- Header with Stats -->
         <header class="border-b border-slate-800 p-4">
-            <div class="flex items-center justify-between gap-4">
-                <!-- Mobile Menu Button -->
-                <button id="menu-toggle" 
-                        onclick="toggleSidebar()"
-                        class="lg:hidden p-2 -ml-2 text-slate-400 hover:text-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-                
-                <!-- Search -->
-                <div class="relative w-80 max-lg:flex-1">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input type="text" 
-                           name="search"
-                           placeholder="Filter torrents..."
-                              class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+            <div class="flex flex-col gap-3">
+                <!-- Top row: menu + search + settings -->
+                <div class="flex items-center gap-3">
+                    <button id="menu-toggle" 
+                            onclick="toggleSidebar()"
+                            class="lg:hidden p-2 -ml-2 text-slate-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+
+                    <div class="relative flex-1 lg:flex-none lg:w-80">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" 
+                               name="search"
+                               inputmode="search"
+                               placeholder="Filter torrents..."
+                               class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+                    </div>
+
+                    <button class="p-2 text-slate-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </button>
                 </div>
-                
-                <!-- Stats (hidden on mobile) -->
+
+                <!-- Second row: stats (scrollable on mobile) -->
                 <div id="stats-container" 
                      hx-ext="sse"
                      sse-connect="/events/stats"
                      sse-swap="stats"
                      hx-swap="innerHTML"
-                     class="hidden lg:flex items-center gap-8">
+                     class="flex items-center gap-6 overflow-x-auto pb-1 lg:overflow-visible lg:pb-0 lg:gap-8">
                     {% include "partials/stats.html" %}
                 </div>
-                
-                <!-- Settings -->
-                <button class="p-2 text-slate-400 hover:text-white transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                </button>
             </div>
         </header>
         
@@ -165,7 +166,7 @@
             <!-- Mobile Header -->
             <div class="lg:hidden sticky top-0 bg-slate-950 border-b border-slate-800 z-10 px-4 py-3 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-white">Transferler</h2>
-                <button class="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
+                <button onclick="openMobileSort()" class="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
                     </svg>
@@ -237,10 +238,39 @@
         </div>
         
         <!-- Footer -->
-        <footer id="torrent-footer" class="border-t border-slate-800 px-6 py-3 text-sm text-slate-500">
+        <footer id="torrent-footer" class="border-t border-slate-800 px-4 lg:px-6 py-3 text-sm text-slate-500">
             Showing {{ torrents.len() }} torrents
         </footer>
     </main>
+</div>
+
+<!-- Mobile Sort Sheet -->
+<div id="mobile-sort-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="closeMobileSort()"></div>
+<div id="mobile-sort-sheet" class="fixed left-0 right-0 bottom-0 z-50 hidden">
+    <div class="bg-slate-900 border-t border-slate-800 rounded-t-2xl shadow-2xl px-4 pt-4 pb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="text-white font-semibold">Sırala</div>
+                <div class="text-sm text-slate-400" id="mobile-sort-current">Seçili değil</div>
+            </div>
+            <button class="p-2 -mr-2 text-slate-400 hover:text-white" onclick="closeMobileSort()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-2">
+            <button class="mobile-sort-option px-3 py-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-sm" onclick="setMobileSort('name')">Name</button>
+            <button class="mobile-sort-option px-3 py-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-sm" onclick="setMobileSort('size')">Size</button>
+            <button class="mobile-sort-option px-3 py-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-sm" onclick="setMobileSort('progress')">Progress</button>
+            <button class="mobile-sort-option px-3 py-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-sm" onclick="setMobileSort('down_rate')">↓ Speed</button>
+            <button class="mobile-sort-option px-3 py-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-sm" onclick="setMobileSort('up_rate')">↑ Speed</button>
+            <button class="mobile-sort-option px-3 py-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-sm" onclick="clearMobileSort()">Clear</button>
+        </div>
+
+        <div class="mt-3 text-xs text-slate-500">Aynı alana tekrar dokununca artan/azalan terslenir.</div>
+    </div>
 </div>
 
 <script>
@@ -362,9 +392,11 @@
         if (sidebar.classList.contains('sidebar-open')) {
             sidebar.classList.remove('sidebar-open');
             overlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
         } else {
             sidebar.classList.add('sidebar-open');
             overlay.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
         }
     }
     
@@ -373,6 +405,52 @@
         const overlay = document.getElementById('sidebar-overlay');
         sidebar.classList.remove('sidebar-open');
         overlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    // Mobile sort sheet
+    function openMobileSort() {
+        document.getElementById('mobile-sort-overlay').classList.remove('hidden');
+        document.getElementById('mobile-sort-sheet').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        updateMobileSortLabel();
+    }
+
+    function closeMobileSort() {
+        document.getElementById('mobile-sort-overlay').classList.add('hidden');
+        document.getElementById('mobile-sort-sheet').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function updateMobileSortLabel() {
+        const el = document.getElementById('mobile-sort-current');
+        if (!el) return;
+        if (!currentSort) {
+            el.textContent = 'Seçili değil';
+            return;
+        }
+        const dir = currentOrder === 'asc' ? '↑' : '↓';
+        el.textContent = `${currentSort} ${dir}`;
+    }
+
+    function setMobileSort(sortField) {
+        if (currentSort === sortField) {
+            currentOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+        } else {
+            currentSort = sortField;
+            currentOrder = sortField === 'name' ? 'asc' : 'desc';
+        }
+        reconnectSse();
+        updateMobileSortLabel();
+        closeMobileSort();
+    }
+
+    function clearMobileSort() {
+        currentSort = null;
+        currentOrder = 'desc';
+        reconnectSse();
+        updateMobileSortLabel();
+        closeMobileSort();
     }
     
     // Close sidebar when clicking a nav item on mobile

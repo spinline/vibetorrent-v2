@@ -59,6 +59,7 @@
         .app-shell {
             display: flex;
             min-height: 100vh;
+            min-height: 100dvh;
             background-color: var(--bg-primary);
         }
         
@@ -110,7 +111,7 @@
         });
     </script>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased" 
+<body class="bg-slate-950 text-slate-100 antialiased overflow-x-hidden" 
       hx-boost="true"
       _="on closeModal remove .modal-open from body then remove #modal-backdrop">
     
