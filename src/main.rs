@@ -127,7 +127,38 @@ async fn setup_page(error: Option<String>) -> Html<String> {
         error,
         cache_version: crate::templates::CACHE_VERSION.clone(),
     };
-    Html(template.render().unwrap_or_default())
+
+        match template.render() {
+                Ok(html) => Html(html),
+                Err(err) => {
+                        tracing::error!("Failed to render setup template: {}", err);
+                        Html(format!(
+                                r#"<!doctype html>
+<html lang=\"en\">
+    <head>
+        <meta charset=\"utf-8\" />
+        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+        <title>Setup Error</title>
+        <style>
+            body {{ background:#0b1220; color:#e2e8f0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; padding: 24px; }}
+            .card {{ max-width: 900px; margin: 0 auto; background:#0f172a; border:1px solid #1f2937; border-radius: 12px; padding: 20px; }}
+            h1 {{ margin: 0 0 12px; font-size: 20px; }}
+            pre {{ white-space: pre-wrap; background:#020617; border:1px solid #1f2937; padding: 12px; border-radius: 10px; color:#fca5a5; }}
+            .hint {{ color:#94a3b8; font-size: 14px; }}
+        </style>
+    </head>
+    <body>
+        <div class=\"card\">
+            <h1>Setup page failed to render</h1>
+            <p class=\"hint\">The server is running, but the HTML template render errored. Check server logs for details.</p>
+            <pre>{}</pre>
+        </div>
+    </body>
+</html>"#,
+                                err
+                        ))
+                }
+        }
 }
 
 async fn setup_get() -> Html<String> {
