@@ -7,7 +7,7 @@
     <!-- Mobile Menu Overlay -->
     <div id="sidebar-overlay" 
          class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"
-         onclick="closeSidebar()"></div>
+         _="on click call closeSidebar()"></div>
     
     <!-- Sidebar -->
     <aside id="sidebar" class="w-52 bg-slate-900 border-r border-slate-800 flex flex-col max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:-translate-x-full max-lg:transition-transform max-lg:duration-200">
@@ -32,10 +32,16 @@
                 Transfers
             </div>
             
-            <a href="#"
-               onclick="setFilter('all'); return false;"
-               class="nav-item active"
-               data-filter="all">
+                <a href="#"
+                   _="on click call setFilter('all') then
+                       for .nav-item remove .active
+                       add .active to me
+                       if window.innerWidth < 1024
+                           call closeSidebar()
+                       end
+                       halt"
+                   class="nav-item active"
+                   data-filter="all">
                 <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -45,10 +51,16 @@
                 <span id="count-all" class="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded-full">{{ total_count }}</span>
             </a>
             
-            <a href="#"
-               onclick="setFilter('downloading'); return false;"
-               class="nav-item"
-               data-filter="downloading">
+                <a href="#"
+                   _="on click call setFilter('downloading') then
+                       for .nav-item remove .active
+                       add .active to me
+                       if window.innerWidth < 1024
+                           call closeSidebar()
+                       end
+                       halt"
+                   class="nav-item"
+                   data-filter="downloading">
                 <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -58,10 +70,16 @@
                 <span id="count-downloading" class="text-slate-500 text-xs">{{ downloading_count }}</span>
             </a>
             
-            <a href="#"
-               onclick="setFilter('seeding'); return false;"
-               class="nav-item"
-               data-filter="seeding">
+                <a href="#"
+                   _="on click call setFilter('seeding') then
+                       for .nav-item remove .active
+                       add .active to me
+                       if window.innerWidth < 1024
+                           call closeSidebar()
+                       end
+                       halt"
+                   class="nav-item"
+                   data-filter="seeding">
                 <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/>
@@ -71,10 +89,16 @@
                 <span id="count-seeding" class="text-slate-500 text-xs">{{ seeding_count }}</span>
             </a>
             
-            <a href="#"
-               onclick="setFilter('paused'); return false;"
-               class="nav-item"
-               data-filter="paused">
+                <a href="#"
+                   _="on click call setFilter('paused') then
+                       for .nav-item remove .active
+                       add .active to me
+                       if window.innerWidth < 1024
+                           call closeSidebar()
+                       end
+                       halt"
+                   class="nav-item"
+                   data-filter="paused">
                 <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -122,8 +146,8 @@
             <div class="flex items-center justify-between gap-4">
                 <!-- Mobile Menu Button -->
                 <button id="menu-toggle" 
-                        onclick="toggleSidebar()"
-                        class="lg:hidden p-2 -ml-2 text-slate-400 hover:text-white">
+                    _="on click call toggleSidebar()"
+                    class="lg:hidden p-2 -ml-2 text-slate-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
@@ -138,10 +162,21 @@
                            id="search-input"
                            name="search"
                            placeholder="Filter torrents..."
-                           class="flex-1 bg-transparent border-none p-0 text-sm text-white placeholder-slate-500 focus:ring-0 focus:outline-none w-full min-w-0">
+                           class="flex-1 bg-transparent border-none p-0 text-sm text-white placeholder-slate-500 focus:ring-0 focus:outline-none w-full min-w-0"
+                           _="on input debounce 300ms
+                                   set currentSearch to my.value
+                                   if my.value.length > 0
+                                       remove .hidden from #search-clear-btn
+                                   else
+                                       add .hidden to #search-clear-btn
+                                   end
+                                   call reconnectSse()
+                               on keydown if event.key is 'Escape'
+                                   call clearSearch()
+                                   call my.blur()">
                     <!-- Clear button -->
-                    <button id="search-clear-btn" 
-                            onclick="clearSearch()" 
+                        <button id="search-clear-btn" 
+                            _="on click call clearSearch()" 
                             class="text-slate-500 hover:text-white hidden lg:hidden flex-shrink-0 focus:outline-none">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -176,14 +211,14 @@
                 <h2 class="text-lg font-semibold text-white">Transferler</h2>
                 <!-- Sort Button with Dropdown -->
                 <div class="relative">
-                    <button id="mobile-sort-btn" onclick="toggleMobileSortMenu()" class="p-2 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors">
+                    <button id="mobile-sort-btn" _="on click call toggleMobileSortMenu()" class="p-2 rounded-lg hover:bg-slate-800/50 text-slate-400 hover:text-white transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h12M3 18h6"/>
                         </svg>
                     </button>
                     <!-- Sort Dropdown Menu -->
                     <div id="mobile-sort-menu" class="absolute right-0 top-full mt-2 w-56 rounded-xl bg-slate-900 border border-slate-700/80 shadow-xl overflow-hidden hidden z-50">
-                        <button onclick="mobileSortSelect('name', 'asc')" data-sort="name" data-order="asc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
+                        <button _="on click call mobileSortSelect('name', 'asc')" data-sort="name" data-order="asc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
                             <svg class="w-4 h-4 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h12M3 17h6"/>
                             </svg>
@@ -192,7 +227,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
                             </svg>
                         </button>
-                        <button onclick="mobileSortSelect('size', 'desc')" data-sort="size" data-order="desc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
+                        <button _="on click call mobileSortSelect('size', 'desc')" data-sort="size" data-order="desc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
                             <svg class="w-4 h-4 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
                             </svg>
@@ -201,7 +236,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
-                        <button onclick="mobileSortSelect('progress', 'desc')" data-sort="progress" data-order="desc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
+                        <button _="on click call mobileSortSelect('progress', 'desc')" data-sort="progress" data-order="desc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
                             <svg class="w-4 h-4 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
@@ -210,7 +245,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
-                        <button onclick="mobileSortSelect('down_rate', 'desc')" data-sort="down_rate" data-order="desc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
+                        <button _="on click call mobileSortSelect('down_rate', 'desc')" data-sort="down_rate" data-order="desc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
                             <svg class="w-4 h-4 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
                             </svg>
@@ -219,7 +254,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
-                        <button onclick="mobileSortSelect('up_rate', 'desc')" data-sort="up_rate" data-order="desc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
+                        <button _="on click call mobileSortSelect('up_rate', 'desc')" data-sort="up_rate" data-order="desc" class="mobile-sort-option w-full px-4 py-2.5 flex items-center gap-3 hover:bg-slate-800/80 text-left group">
                             <svg class="w-4 h-4 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
                             </svg>
@@ -235,47 +270,72 @@
             <!-- Table Header (Desktop only) -->
             <div class="hidden lg:block sticky top-0 bg-slate-950 border-b border-slate-800 z-10">
                 <div class="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <button class="col-span-5 flex items-center gap-1 hover:text-white transition-colors cursor-pointer sort-header"
-                            onclick="toggleSort(this, 'name')"
-                            data-sort="name"
-                            data-order="asc">
+                            <button class="col-span-5 flex items-center gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                                _="on click
+                                   for .sort-header remove .text-white
+                                   for .sort-header put iconNeutral into .sort-icon's innerHTML
+                                   add .text-white to me
+                                   put (currentOrder == 'desc' ? iconDown : iconUp) into .sort-icon's innerHTML
+                                   call toggleSort(this, 'name')"
+                                data-sort="name"
+                                data-order="asc">
                         <span>Name</span>
                         <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
                         </svg>
                     </button>
-                    <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
-                            onclick="toggleSort(this, 'size')"
-                            data-sort="size"
-                            data-order="desc">
+                            <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                                _="on click
+                                   for .sort-header remove .text-white
+                                   for .sort-header put iconNeutral into .sort-icon's innerHTML
+                                   add .text-white to me
+                                   put (currentOrder == 'desc' ? iconDown : iconUp) into .sort-icon's innerHTML
+                                   call toggleSort(this, 'size')"
+                                data-sort="size"
+                                data-order="desc">
                         <span>Size</span>
                         <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
                         </svg>
                     </button>
-                    <button class="col-span-2 text-center flex items-center justify-center gap-1 hover:text-white transition-colors cursor-pointer sort-header"
-                            onclick="toggleSort(this, 'progress')"
-                            data-sort="progress"
-                            data-order="desc">
+                            <button class="col-span-2 text-center flex items-center justify-center gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                                _="on click
+                                   for .sort-header remove .text-white
+                                   for .sort-header put iconNeutral into .sort-icon's innerHTML
+                                   add .text-white to me
+                                   put (currentOrder == 'desc' ? iconDown : iconUp) into .sort-icon's innerHTML
+                                   call toggleSort(this, 'progress')"
+                                data-sort="progress"
+                                data-order="desc">
                         <span>Progress</span>
                         <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
                         </svg>
                     </button>
                     <div class="col-span-1 text-center">Status</div>
-                    <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
-                            onclick="toggleSort(this, 'down_rate')"
-                            data-sort="down_rate"
-                            data-order="desc">
+                            <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                                _="on click
+                                   for .sort-header remove .text-white
+                                   for .sort-header put iconNeutral into .sort-icon's innerHTML
+                                   add .text-white to me
+                                   put (currentOrder == 'desc' ? iconDown : iconUp) into .sort-icon's innerHTML
+                                   call toggleSort(this, 'down_rate')"
+                                data-sort="down_rate"
+                                data-order="desc">
                         <span>↓ Speed</span>
                         <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
                         </svg>
                     </button>
-                    <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
-                            onclick="toggleSort(this, 'up_rate')"
-                            data-sort="up_rate"
-                            data-order="desc">
+                            <button class="col-span-1 text-right flex items-center justify-end gap-1 hover:text-white transition-colors cursor-pointer sort-header"
+                                _="on click
+                                   for .sort-header remove .text-white
+                                   for .sort-header put iconNeutral into .sort-icon's innerHTML
+                                   add .text-white to me
+                                   put (currentOrder == 'desc' ? iconDown : iconUp) into .sort-icon's innerHTML
+                                   call toggleSort(this, 'up_rate')"
+                                data-sort="up_rate"
+                                data-order="desc">
                         <span>↑ Speed</span>
                         <svg class="w-3 h-3 opacity-50 sort-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
