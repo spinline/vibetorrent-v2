@@ -146,7 +146,7 @@
                      sse-connect="/events/stats"
                      sse-swap="stats"
                      hx-swap="innerHTML"
-                     class="hidden lg:flex items-center gap-8">
+                     class="max-lg:hidden flex items-center gap-8">
                     {% include "partials/stats.html" %}
                 </div>
                 
@@ -165,12 +165,86 @@
             <!-- Mobile Header -->
             <div class="lg:hidden sticky top-0 bg-slate-950 border-b border-slate-800 z-10 px-4 py-3 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-white">Transferler</h2>
-                <button class="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
+                <button type="button"
+                        onclick="toggleMobileSortMenu()"
+                        class="flex items-center gap-1 text-slate-400 hover:text-white text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
                     </svg>
-                    Sırala
+                    <span id="mobile-sort-label">Sırala</span>
                 </button>
+            </div>
+
+            <!-- Mobile Sort Menu -->
+            <div id="mobile-sort-overlay" class="lg:hidden fixed inset-0 z-50 hidden">
+                <div class="absolute inset-0 bg-black/50" onclick="closeMobileSortMenu()"></div>
+                <div class="absolute right-4 top-24 w-[min(22rem,calc(100vw-2rem))] rounded-xl bg-slate-900/95 border border-slate-700 shadow-2xl overflow-hidden">
+                    <div class="px-4 py-3 text-sm font-semibold text-slate-200">Sıralama</div>
+                    <div class="border-t border-slate-800"></div>
+
+                    <button type="button" class="mobile-sort-item w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-800/60" data-sort="name" onclick="selectMobileSort('name', 'asc')">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h13M3 12h9M3 18h6"/>
+                            </svg>
+                            <span class="text-slate-100">İsim (A-Z)</span>
+                        </div>
+                        <svg class="mobile-sort-check hidden w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+
+                    <button type="button" class="mobile-sort-item w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-800/60" data-sort="size" onclick="selectMobileSort('size')">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/>
+                            </svg>
+                            <span class="text-slate-100">Boyut</span>
+                        </div>
+                        <svg class="mobile-sort-check hidden w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+
+                    <button type="button" class="mobile-sort-item w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-800/60" data-sort="progress" onclick="selectMobileSort('progress')">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h3v7H5v-7zm5-6h3v13h-3V6zm5 3h3v10h-3V9z"/>
+                            </svg>
+                            <span class="text-slate-100">İlerleme</span>
+                        </div>
+                        <svg class="mobile-sort-check hidden w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+
+                    <button type="button" class="mobile-sort-item w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-800/60" data-sort="down_rate" onclick="selectMobileSort('down_rate')">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l-4-4m4 4l4-4"/>
+                            </svg>
+                            <span class="text-slate-100">İndirme Hızı</span>
+                        </div>
+                        <svg class="mobile-sort-check hidden w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+
+                    <button type="button" class="mobile-sort-item w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-800/60" data-sort="up_rate" onclick="selectMobileSort('up_rate')">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21V9m0 0l-4 4m4-4l4 4"/>
+                            </svg>
+                            <span class="text-slate-100">Yükleme Hızı</span>
+                        </div>
+                        <svg class="mobile-sort-check hidden w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </button>
+
+                    <div class="border-t border-slate-800"></div>
+                    <button type="button" class="w-full px-4 py-3 text-left text-slate-300 hover:bg-slate-800/60" onclick="clearSort()">Sıralamayı Sıfırla</button>
+                </div>
             </div>
             
             <!-- Table Header (Desktop only) -->
@@ -325,15 +399,37 @@
     }
     
     function toggleSort(btn, sortField) {
-        // Toggle order if same field clicked again
-        if (currentSort === sortField) {
+        applySort(sortField);
+    }
+
+    function applySort(sortField, explicitOrder = null) {
+        if (explicitOrder) {
+            currentSort = sortField;
+            currentOrder = explicitOrder;
+        } else if (currentSort === sortField) {
             currentOrder = currentOrder === 'desc' ? 'asc' : 'desc';
         } else {
             currentSort = sortField;
-            // Default order: name is asc, others are desc
             currentOrder = sortField === 'name' ? 'asc' : 'desc';
         }
-        
+
+        syncDesktopSortIndicators();
+        syncMobileSortIndicators();
+        updateMobileSortLabel();
+        reconnectSse();
+    }
+
+    function clearSort() {
+        currentSort = null;
+        currentOrder = 'desc';
+        syncDesktopSortIndicators();
+        syncMobileSortIndicators();
+        updateMobileSortLabel();
+        reconnectSse();
+        closeMobileSortMenu();
+    }
+
+    function syncDesktopSortIndicators() {
         // Reset all buttons to neutral state
         document.querySelectorAll('.sort-header').forEach(b => {
             b.classList.remove('text-white');
@@ -342,16 +438,77 @@
             icon.classList.add('opacity-50');
             icon.innerHTML = iconNeutral;
         });
-        
-        // Update active button
-        btn.classList.add('text-white');
-        const activeIcon = btn.querySelector('.sort-icon');
+
+        if (!currentSort) {
+            return;
+        }
+
+        const active = document.querySelector(`.sort-header[data-sort="${currentSort}"]`);
+        if (!active) {
+            return;
+        }
+        active.classList.add('text-white');
+        const activeIcon = active.querySelector('.sort-icon');
         activeIcon.classList.remove('opacity-50');
         activeIcon.classList.add('opacity-100');
         activeIcon.innerHTML = currentOrder === 'desc' ? iconDown : iconUp;
-        
-        // SSE is the single source of truth for list updates
-        reconnectSse();
+    }
+
+    function updateMobileSortLabel() {
+        const label = document.getElementById('mobile-sort-label');
+        if (!label) return;
+
+        const map = {
+            name: 'İsim',
+            size: 'Boyut',
+            progress: 'İlerleme',
+            down_rate: 'İndirme',
+            up_rate: 'Yükleme',
+        };
+        if (!currentSort) {
+            label.textContent = 'Sırala';
+            return;
+        }
+        const base = map[currentSort] || 'Sırala';
+        const dir = currentOrder === 'asc' ? '↑' : '↓';
+        label.textContent = `${base} ${dir}`;
+    }
+
+    function toggleMobileSortMenu() {
+        const overlay = document.getElementById('mobile-sort-overlay');
+        if (!overlay) return;
+        const isHidden = overlay.classList.contains('hidden');
+        if (isHidden) {
+            overlay.classList.remove('hidden');
+            syncMobileSortIndicators();
+        } else {
+            overlay.classList.add('hidden');
+        }
+    }
+
+    function closeMobileSortMenu() {
+        const overlay = document.getElementById('mobile-sort-overlay');
+        if (!overlay) return;
+        overlay.classList.add('hidden');
+    }
+
+    function selectMobileSort(sortField, explicitOrder = null) {
+        applySort(sortField, explicitOrder);
+        closeMobileSortMenu();
+    }
+
+    function syncMobileSortIndicators() {
+        const overlay = document.getElementById('mobile-sort-overlay');
+        if (!overlay) return;
+
+        overlay.querySelectorAll('.mobile-sort-item').forEach(item => {
+            const isActive = currentSort && item.dataset.sort === currentSort;
+            const check = item.querySelector('.mobile-sort-check');
+            if (check) {
+                check.classList.toggle('hidden', !isActive);
+            }
+            item.classList.toggle('text-emerald-400', isActive);
+        });
     }
     
     // Mobile sidebar toggle functions
@@ -432,5 +589,6 @@
     });
 
     document.addEventListener('DOMContentLoaded', updateFooterCount);
+    document.addEventListener('DOMContentLoaded', updateMobileSortLabel);
 </script>
 {% endblock %}
