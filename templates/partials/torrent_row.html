@@ -191,7 +191,7 @@
         </div>
         
         <!-- Mobile Action Menu (hidden by default) -->
-        <div class="mobile-actions hidden mt-3 pt-3 border-t border-slate-800 flex justify-around">
+        <div class="mobile-actions mt-3 pt-3 border-t border-slate-800 flex justify-around hidden">
             {% if torrent.is_paused %}
             <button hx-post="/torrent/{{ torrent.hash }}/resume"
                     hx-target="#torrent-{{ torrent.hash }}"
