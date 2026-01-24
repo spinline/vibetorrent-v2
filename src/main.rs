@@ -11,7 +11,7 @@ use axum::{
     routing::{get, post},
     Router,
     response::{Response, Html, Redirect, IntoResponse},
-    http::{header, StatusCode, Request},
+    http::{header, HeaderValue, StatusCode, Request},
     extract::{Path, State},
     body::Body,
     Form,
@@ -91,17 +91,25 @@ async fn serve_static(Path(path): Path<String>) -> Response<Body> {
     match StaticFiles::get(path) {
         Some(content) => {
             let mime = mime_guess::from_path(path).first_or_octet_stream();
-            Response::builder()
-                .status(StatusCode::OK)
-                .header(header::CONTENT_TYPE, mime.as_ref())
-                .header(header::CACHE_CONTROL, "public, max-age=31536000")
-                .body(Body::from(content.data.into_owned()))
-                .unwrap()
+            let mut response = Response::new(Body::from(content.data.into_owned()));
+            *response.status_mut() = StatusCode::OK;
+
+            let headers = response.headers_mut();
+            let content_type = HeaderValue::from_str(mime.as_ref())
+                .unwrap_or_else(|_| HeaderValue::from_static("application/octet-stream"));
+            headers.insert(header::CONTENT_TYPE, content_type);
+            headers.insert(
+                header::CACHE_CONTROL,
+                HeaderValue::from_static("public, max-age=31536000"),
+            );
+
+            response
         }
-        None => Response::builder()
-            .status(StatusCode::NOT_FOUND)
-            .body(Body::from("Not Found"))
-            .unwrap(),
+        None => {
+            let mut response = Response::new(Body::from("Not Found"));
+            *response.status_mut() = StatusCode::NOT_FOUND;
+            response
+        }
     }
 }
 
