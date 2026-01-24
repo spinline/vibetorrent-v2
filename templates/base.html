@@ -36,40 +36,33 @@
             color: var(--text-primary);
             margin: 0;
             padding: 0;
-            min-height: 100%;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Prevent body scrolling */
+            position: fixed; /* Fix body to prevent bounce and scroll */
+            touch-action: none; /* Disable all browser gestures on body */
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
         }
         
-        /* Hide content until styles load */
-        .js-loading * {
-            visibility: hidden;
+        /* Re-enable selection for inputs and important text */
+        input, textarea, [contenteditable="true"], .selectable-text {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            touch-action: auto !important;
         }
         
-        .js-loading {
-            background-color: var(--bg-primary);
-        }
-        
-        /* Preload indicator */
-        .preload-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: var(--bg-primary);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.2s ease-out;
-        }
-        
-        .preload-overlay.loaded {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        /* App shell styles */
+        /* App shell styles - this becomes our scrollable container */
         .app-shell {
             display: flex;
-            min-height: 100vh;
+            height: 100%;
+            width: 100%;
             background-color: var(--bg-primary);
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         
         .sidebar {
@@ -77,11 +70,18 @@
             background-color: var(--bg-secondary);
             border-right: 1px solid var(--border-color);
             flex-shrink: 0;
+            height: 100%;
+            overflow-y: auto;
         }
         
         .main-content {
             flex: 1;
             background-color: var(--bg-primary);
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y; /* Allow vertical scrolling but no zoom */
         }
     </style>
     
