@@ -3,6 +3,7 @@ mod error;
 mod routes;
 mod rtorrent;
 mod sse;
+mod services;
 mod state;
 mod templates;
 
