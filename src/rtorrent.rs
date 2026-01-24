@@ -344,9 +344,9 @@ impl RtorrentClient {
             ],
         )?;
         
-        tracing::debug!("get_torrents request XML: {}", xml);
+        tracing::trace!("get_torrents request XML length: {} bytes", xml.len());
         let response = self.send_request(&xml).await?;
-        tracing::debug!("get_torrents response: {}", response);
+        tracing::trace!("get_torrents response length: {} bytes", response.len());
         self.parse_torrents_response(&response)
     }
     
@@ -464,10 +464,7 @@ impl RtorrentClient {
             buf.clear();
         }
         
-        tracing::debug!("Parsed {} torrents", torrents.len());
-        for t in &torrents {
-            tracing::debug!("Torrent: {} - {}", t.hash, t.name);
-        }
+        tracing::trace!("Parsed {} torrents", torrents.len());
         
         Ok(torrents)
     }
@@ -600,7 +597,7 @@ impl RtorrentClient {
             escaped_url
         );
         let response = self.send_request(&xml).await?;
-        tracing::debug!("add_torrent_url response: {}", response);
+        tracing::trace!("add_torrent_url response length: {} bytes", response.len());
         Ok(())
     }
     
@@ -620,7 +617,7 @@ impl RtorrentClient {
             encoder
         );
         let response = self.send_request(&xml).await?;
-        tracing::debug!("add_torrent_file response: {}", response);
+        tracing::trace!("add_torrent_file response length: {} bytes", response.len());
         Ok(())
     }
 }
