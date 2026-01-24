@@ -202,53 +202,109 @@ impl RtorrentClient {
         Ok(response_str[body_start..].to_string())
     }
     
-    fn build_multicall_xml(method: &str, params: &[&str]) -> String {
+    fn build_multicall_xml(method: &str, params: &[&str]) -> Result<String> {
         let mut writer = Writer::new(Cursor::new(Vec::new()));
         
         // Start methodCall
-        writer.write_event(Event::Start(BytesStart::new("methodCall"))).unwrap();
+        writer
+            .write_event(Event::Start(BytesStart::new("methodCall")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         
         // methodName
-        writer.write_event(Event::Start(BytesStart::new("methodName"))).unwrap();
-        writer.write_event(Event::Text(BytesText::new(method))).unwrap();
-        writer.write_event(Event::End(BytesEnd::new("methodName"))).unwrap();
+        writer
+            .write_event(Event::Start(BytesStart::new("methodName")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::Text(BytesText::new(method)))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::End(BytesEnd::new("methodName")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         
         // params
-        writer.write_event(Event::Start(BytesStart::new("params"))).unwrap();
+        writer
+            .write_event(Event::Start(BytesStart::new("params")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         
         // First param (empty string for d.multicall2)
-        writer.write_event(Event::Start(BytesStart::new("param"))).unwrap();
-        writer.write_event(Event::Start(BytesStart::new("value"))).unwrap();
-        writer.write_event(Event::Start(BytesStart::new("string"))).unwrap();
-        writer.write_event(Event::End(BytesEnd::new("string"))).unwrap();
-        writer.write_event(Event::End(BytesEnd::new("value"))).unwrap();
-        writer.write_event(Event::End(BytesEnd::new("param"))).unwrap();
+        writer
+            .write_event(Event::Start(BytesStart::new("param")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::Start(BytesStart::new("value")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::Start(BytesStart::new("string")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::End(BytesEnd::new("string")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::End(BytesEnd::new("value")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::End(BytesEnd::new("param")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         
         // Second param (view name)
-        writer.write_event(Event::Start(BytesStart::new("param"))).unwrap();
-        writer.write_event(Event::Start(BytesStart::new("value"))).unwrap();
-        writer.write_event(Event::Start(BytesStart::new("string"))).unwrap();
-        writer.write_event(Event::Text(BytesText::new("main"))).unwrap();
-        writer.write_event(Event::End(BytesEnd::new("string"))).unwrap();
-        writer.write_event(Event::End(BytesEnd::new("value"))).unwrap();
-        writer.write_event(Event::End(BytesEnd::new("param"))).unwrap();
+        writer
+            .write_event(Event::Start(BytesStart::new("param")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::Start(BytesStart::new("value")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::Start(BytesStart::new("string")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::Text(BytesText::new("main")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::End(BytesEnd::new("string")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::End(BytesEnd::new("value")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::End(BytesEnd::new("param")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         
         // Additional method params
         for param in params {
-            writer.write_event(Event::Start(BytesStart::new("param"))).unwrap();
-            writer.write_event(Event::Start(BytesStart::new("value"))).unwrap();
-            writer.write_event(Event::Start(BytesStart::new("string"))).unwrap();
-            writer.write_event(Event::Text(BytesText::new(param))).unwrap();
-            writer.write_event(Event::End(BytesEnd::new("string"))).unwrap();
-            writer.write_event(Event::End(BytesEnd::new("value"))).unwrap();
-            writer.write_event(Event::End(BytesEnd::new("param"))).unwrap();
+            writer
+                .write_event(Event::Start(BytesStart::new("param")))
+                .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+            writer
+                .write_event(Event::Start(BytesStart::new("value")))
+                .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+            writer
+                .write_event(Event::Start(BytesStart::new("string")))
+                .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+            writer
+                .write_event(Event::Text(BytesText::new(param)))
+                .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+            writer
+                .write_event(Event::End(BytesEnd::new("string")))
+                .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+            writer
+                .write_event(Event::End(BytesEnd::new("value")))
+                .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+            writer
+                .write_event(Event::End(BytesEnd::new("param")))
+                .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         }
         
-        writer.write_event(Event::End(BytesEnd::new("params"))).unwrap();
-        writer.write_event(Event::End(BytesEnd::new("methodCall"))).unwrap();
+        writer
+            .write_event(Event::End(BytesEnd::new("params")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        writer
+            .write_event(Event::End(BytesEnd::new("methodCall")))
+            .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         
         let result = writer.into_inner().into_inner();
-        format!("<?xml version=\"1.0\"?>\n{}", String::from_utf8(result).unwrap())
+        let xml_body =
+            String::from_utf8(result).map_err(|e| AppError::XmlBuildError(e.to_string()))?;
+        Ok(format!("<?xml version=\"1.0\"?>\n{}", xml_body))
     }
     
     fn build_simple_xml(method: &str) -> String {
@@ -292,7 +348,7 @@ impl RtorrentClient {
                 "d.message=",
                 "d.ratio=",
             ],
-        );
+        )?;
         
         tracing::debug!("get_torrents request XML: {}", xml);
         let response = self.send_request(&xml).await?;

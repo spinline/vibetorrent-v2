@@ -13,6 +13,9 @@ pub enum AppError {
     
     #[error("XML-RPC error: {0}")]
     XmlRpcError(String),
+
+    #[error("XML build error: {0}")]
+    XmlBuildError(String),
     
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
@@ -33,6 +36,7 @@ impl IntoResponse for AppError {
             AppError::RtorrentConnection(_) => (StatusCode::SERVICE_UNAVAILABLE, self.to_string()),
             AppError::ScgiError(_) => (StatusCode::BAD_GATEWAY, self.to_string()),
             AppError::XmlRpcError(_) => (StatusCode::BAD_GATEWAY, self.to_string()),
+            AppError::XmlBuildError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             AppError::IoError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             AppError::TemplateError(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             AppError::NotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
