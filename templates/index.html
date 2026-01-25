@@ -32,57 +32,65 @@
                 Transfers
             </div>
             
-            <a href="#"
-               onclick="setFilter('all'); return false;"
-               class="nav-item active"
-               data-filter="all">
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                    </svg>
-                    <span>All Torrents</span>
-                </div>
-                <span id="count-all" class="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded-full">{{ total_count }}</span>
-            </a>
+                        <a href="#"
+                             onclick="setFilter('all'); return false;"
+                             class="nav-item active"
+                             data-filter="all">
+                                <div class="flex items-center gap-3">
+                                        <div class="icon-wrap">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                            </svg>
+                                        </div>
+                                        <span>All Torrents</span>
+                                </div>
+                                <span id="count-all" class="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded-full">{{ total_count }}</span>
+                        </a>
             
-            <a href="#"
-               onclick="setFilter('downloading'); return false;"
-               class="nav-item"
-               data-filter="downloading">
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    <span>Downloading</span>
-                </div>
-                <span id="count-downloading" class="text-slate-500 text-xs">{{ downloading_count }}</span>
-            </a>
+                        <a href="#"
+                             onclick="setFilter('downloading'); return false;"
+                             class="nav-item"
+                             data-filter="downloading">
+                                <div class="flex items-center gap-3">
+                                        <div class="icon-wrap">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                            </svg>
+                                        </div>
+                                        <span>Downloading</span>
+                                </div>
+                                <span id="count-downloading" class="text-slate-500 text-xs">{{ downloading_count }}</span>
+                        </a>
             
-            <a href="#"
-               onclick="setFilter('seeding'); return false;"
-               class="nav-item"
-               data-filter="seeding">
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/>
-                    </svg>
-                    <span>Seeding</span>
-                </div>
-                <span id="count-seeding" class="text-slate-500 text-xs">{{ seeding_count }}</span>
-            </a>
+                        <a href="#"
+                             onclick="setFilter('seeding'); return false;"
+                             class="nav-item"
+                             data-filter="seeding">
+                                <div class="flex items-center gap-3">
+                                        <div class="icon-wrap">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/>
+                                            </svg>
+                                        </div>
+                                        <span>Seeding</span>
+                                </div>
+                                <span id="count-seeding" class="text-slate-500 text-xs">{{ seeding_count }}</span>
+                        </a>
             
-            <a href="#"
-               onclick="setFilter('paused'); return false;"
-               class="nav-item"
-               data-filter="paused">
-                <div class="flex items-center gap-3">
-                    <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span>Paused</span>
-                </div>
-                <span id="count-paused" class="text-slate-500 text-xs">{{ paused_count }}</span>
-            </a>
+                        <a href="#"
+                             onclick="setFilter('paused'); return false;"
+                             class="nav-item"
+                             data-filter="paused">
+                                <div class="flex items-center gap-3">
+                                        <div class="icon-wrap">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <span>Paused</span>
+                                </div>
+                                <span id="count-paused" class="text-slate-500 text-xs">{{ paused_count }}</span>
+                        </a>
         </nav>
         
         <!-- Add Torrent Button -->

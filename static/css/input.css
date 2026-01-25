@@ -81,7 +81,24 @@
   }
   
   .nav-item.active {
-    @apply bg-slate-800 text-white;
+    @apply bg-slate-800;
+    color: var(--accent-green);
+  }
+
+  /* Icon wrapper inside nav items */
+  .nav-item .icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: .5rem;
+    background: transparent;
+  }
+
+  /* Active nav item icon background + icon color handled by currentColor */
+  .nav-item.active .icon-wrap {
+    background-color: rgba(63,185,80,0.08); /* subtle tint of --accent-green */
   }
   
   /* Torrent row */
