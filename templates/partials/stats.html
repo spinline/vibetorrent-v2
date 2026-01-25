@@ -29,3 +29,7 @@
     <span class="text-xs text-slate-500 uppercase">Active Peers</span>
     <span class="font-bold text-white text-lg">{{ stats.active_peers }}</span>
 </div>
+
+<!-- OOB Swaps for Mobile Footer -->
+<span id="mobile-dl-value" hx-swap-oob="true" class="text-emerald-400 font-mono">{{ stats.down_rate_formatted() }}</span>
+<span id="mobile-ul-value" hx-swap-oob="true" class="text-blue-400 font-mono">{{ stats.up_rate_formatted() }}</span>

@@ -170,7 +170,7 @@
         </header>
         
         <!-- Torrent List -->
-        <div class="flex-1 overflow-auto">
+        <div class="flex-1 overflow-auto flex flex-col">
             <!-- Mobile Header -->
             <div class="lg:hidden sticky top-0 bg-slate-950 border-b border-slate-800 z-20 px-4 py-3 flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-white">Transferler</h2>
@@ -293,10 +293,21 @@
                  hx-swap="innerHTML">
                 {% include "partials/torrent_list.html" %}
             </div>
+            
+            <div id="torrent-count-display" class="px-6 py-4 text-sm text-slate-500 text-center border-t border-slate-800/50 mt-auto">
+                Showing {{ torrents.len() }} torrents
+            </div>
         </div>
         
-        <footer id="torrent-footer" class="border-t border-slate-800 px-6 py-3 text-sm text-slate-500">
-            Showing {{ torrents.len() }} torrents
+        <footer id="mobile-stats-footer" class="lg:hidden border-t border-slate-800 bg-slate-900/95 backdrop-blur px-6 py-3 flex justify-between items-center text-sm font-medium z-30 shadow-lg">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-500 font-bold">DL:</span>
+                <span id="mobile-dl-value" class="text-emerald-400 font-mono">-</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-slate-500 font-bold">UL:</span>
+                <span id="mobile-ul-value" class="text-blue-400 font-mono">-</span>
+            </div>
         </footer>
     </main>
 
@@ -512,18 +523,20 @@
     
     function updateFooterCount() {
         const countEl = document.querySelector('#torrent-list [data-torrent-count]');
-        const footer = document.getElementById('torrent-footer');
-        if (countEl && footer) {
+        const display = document.getElementById('torrent-count-display');
+        if (countEl && display) {
             const count = countEl.getAttribute('data-torrent-count');
-            footer.textContent = 'Showing ' + count + ' torrents';
+            display.textContent = 'Showing ' + count + ' torrents';
         }
     }
-
+    
     // Update footer count after HTMX swaps (incl. SSE-driven swaps)
     document.body.addEventListener('htmx:afterSwap', (e) => {
         const target = e.detail && e.detail.target;
-        if (target && (target.id === 'torrent-list' || (target.closest && target.closest('#torrent-list')))) {
-            updateFooterCount();
+        if (target) {
+            if (target.id === 'torrent-list' || (target.closest && target.closest('#torrent-list'))) {
+                updateFooterCount();
+            }
         }
     });
 
@@ -532,7 +545,9 @@
         setTimeout(updateFooterCount, 0);
     });
 
-    document.addEventListener('DOMContentLoaded', updateFooterCount);
+    document.addEventListener('DOMContentLoaded', () => {
+        updateFooterCount();
+    });
 
     // Mobile sort menu functions
     function toggleMobileSortMenu(e) {
