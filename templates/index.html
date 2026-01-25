@@ -295,23 +295,22 @@
             </div>
         </div>
         
-        <!-- Footer -->
         <footer id="torrent-footer" class="border-t border-slate-800 px-6 py-3 text-sm text-slate-500">
             Showing {{ torrents.len() }} torrents
         </footer>
     </main>
-
-    <!-- Mobile Floating Action Button -->
-    <button hx-get="/add-torrent"
-            hx-target="#modal-container"
-            hx-swap="innerHTML"
-            class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full shadow-2xl flex items-center justify-center transition-all active:scale-95 z-40 border border-emerald-500/20"
-            _="on click add .modal-open to body">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-        </svg>
-    </button>
 </div>
+
+<!-- Modern Mobile Floating Action Button -->
+<button hx-get="/add-torrent"
+        hx-target="#modal-container"
+        hx-swap="innerHTML"
+        class="lg:hidden fixed bottom-8 right-6 w-14 h-14 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl shadow-[0_12px_40px_rgba(16,185,129,0.35)] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 z-[60] border border-white/10"
+        _="on click add .modal-open to body">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/>
+    </svg>
+</button>
 
 <script>
     // Current filter, sort, and search state
