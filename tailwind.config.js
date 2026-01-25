@@ -8,7 +8,7 @@ module.exports = {
     extend: {
       colors: {
         slate: {
-          950: '#0a0e14',
+          950: '#0f121a',
         }
       },
       animation: {

@@ -3,8 +3,8 @@
   "short_name": "VibeTorrent",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0e14",
-  "theme_color": "#0a0e14",
+  "background_color": "#0f121a",
+  "theme_color": "#0f121a",
   "description": "A modern rTorrent client",
   "orientation": "any",
   "icons": [

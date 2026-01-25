@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="VibeTorrent">
-    <meta name="theme-color" content="#0a0e14">
+    <meta name="theme-color" content="#0f121a">
     
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/icon.svg">
@@ -19,10 +19,12 @@
     <style>
         /* Critical CSS - prevents FOUC */
         :root {
-            --bg-primary: #0a0e14;
+            --bg-primary: #0f121a;
             --bg-secondary: #0d1117;
             --bg-card: #161b22;
-            --border-color: #21262d;
+            --sidebar-bg: #161922;
+            --sidebar-border: #21232c;
+            --border-color: var(--sidebar-border);
             --text-primary: #e6edf3;
             --text-secondary: #8b949e;
             --accent-blue: #58a6ff;
@@ -67,8 +69,8 @@
         
         .sidebar {
             width: 200px;
-            background-color: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
             flex-shrink: 0;
             height: 100%;
             overflow-y: auto;

@@ -5,7 +5,7 @@
 /* FOUC Prevention - Critical Base Styles */
 @layer base {
   html {
-    background-color: #0a0e14;
+    background-color: #0f121a;
     color: #e6edf3;
     height: 100%;
     width: 100%;
@@ -13,7 +13,7 @@
   }
   
   body {
-    background-color: #0a0e14;
+    background-color: #0f121a;
     height: 100%;
     width: 100%;
     overflow: hidden;
@@ -34,6 +34,9 @@
   /* Prevent layout shift */
   :root {
     --sidebar-width: 13rem;
+    --bg-primary: #0f121a;
+    --sidebar-bg: #161922;
+    --sidebar-border: #21232c;
   }
 }
 
@@ -99,13 +102,23 @@
   .sidebar-open {
     transform: translateX(0) !important;
   }
+
+  /* Left sidebar visual (gradient + subtle inner shadow/pattern) */
+  .sidebar-bg {
+    background-color: var(--sidebar-bg);
+    background-image: none;
+    background-repeat: no-repeat;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 @layer utilities {
   /* Scrollbar styling */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #374151 #0a0e14;
+    scrollbar-color: #374151 var(--bg-primary);
   }
   
   .scrollbar-thin::-webkit-scrollbar {
@@ -113,7 +126,7 @@
   }
   
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: #0a0e14;
+    background: var(--bg-primary);
   }
   
   .scrollbar-thin::-webkit-scrollbar-thumb {
