@@ -466,7 +466,7 @@
 
         // Reset all buttons to neutral state
         document.querySelectorAll('.sort-header').forEach(b => {
-            b.classList.remove('text-white');
+            b.classList.remove('text-text-primary');
             const icon = b.querySelector('.sort-icon');
             icon.classList.remove('opacity-100');
             icon.classList.add('opacity-50');
@@ -474,7 +474,7 @@
         });
 
         // Update active button
-        btn.classList.add('text-white');
+        btn.classList.add('text-text-primary');
         const activeIcon = btn.querySelector('.sort-icon');
         activeIcon.classList.remove('opacity-50');
         activeIcon.classList.add('opacity-100');
@@ -603,7 +603,7 @@
         }
         // Sync desktop indicators (reuse existing logic)
         document.querySelectorAll('.sort-header').forEach(b => {
-            b.classList.remove('text-white');
+            b.classList.remove('text-text-primary');
             const icon = b.querySelector('.sort-icon');
             icon.classList.remove('opacity-100');
             icon.classList.add('opacity-50');
@@ -611,7 +611,7 @@
         });
         const desktopBtn = document.querySelector(`.sort-header[data-sort="${sortField}"]`);
         if (desktopBtn) {
-            desktopBtn.classList.add('text-white');
+            desktopBtn.classList.add('text-text-primary');
             const activeIcon = desktopBtn.querySelector('.sort-icon');
             activeIcon.classList.remove('opacity-50');
             activeIcon.classList.add('opacity-100');
