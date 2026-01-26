@@ -3,67 +3,63 @@
 {% block title %}Setup - VibeTorrent{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+<div class="min-h-screen bg-bg-primary flex items-center justify-center p-4">
     <div class="w-full max-w-md">
         <!-- Logo -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-600 rounded-2xl mb-4">
                 <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-white">VibeTorrent</h1>
-            <p class="text-slate-400 mt-2">Modern rTorrent Web UI</p>
+            <h1 class="text-2xl font-bold text-text-primary">VibeTorrent</h1>
+            <p class="text-text-muted mt-2">Modern rTorrent Web UI</p>
         </div>
-        
+
         <!-- Setup Form -->
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
-            <h2 class="text-lg font-semibold text-white mb-4">Initial Setup</h2>
-            
+        <div class="bg-bg-card border border-border rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-text-primary mb-4">Initial Setup</h2>
+
             {% if error.is_some() %}
             <div class="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg mb-4">
                 {{ error.as_ref().unwrap() }}
             </div>
             {% endif %}
-            
+
             <form method="POST" action="/setup" hx-boost="false" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">
+                    <label class="block text-sm font-medium text-text-secondary mb-2">
                         rTorrent SCGI Socket
                     </label>
-                    <input type="text" 
-                           name="scgi_socket" 
-                           value="{{ scgi_socket }}"
-                           placeholder="/tmp/rtorrent.sock"
-                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
-                    <p class="text-xs text-slate-500 mt-1">
+                    <input type="text" name="scgi_socket" value="{{ scgi_socket }}" placeholder="/tmp/rtorrent.sock"
+                        class="w-full bg-bg-input border border-border rounded-lg px-4 py-2.5 text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary">
+                    <p class="text-xs text-text-muted mt-1">
                         Unix socket path (e.g., /tmp/rtorrent.sock) or TCP address (e.g., 127.0.0.1:5000)
                     </p>
                 </div>
-                
+
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">
+                    <label class="block text-sm font-medium text-text-secondary mb-2">
                         Bind Address
                     </label>
-                    <input type="text" 
-                           name="bind_address" 
-                           value="{{ bind_address }}"
-                           placeholder="0.0.0.0:3000"
-                           class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
-                    <p class="text-xs text-slate-500 mt-1">
+                    <input type="text" name="bind_address" value="{{ bind_address }}" placeholder="0.0.0.0:3000"
+                        class="w-full bg-bg-input border border-border rounded-lg px-4 py-2.5 text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary">
+                    <p class="text-xs text-text-muted mt-1">
                         IP and port to listen on (e.g., 0.0.0.0:3000)
                     </p>
                 </div>
-                
-                <button type="submit" 
-                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 px-4 rounded-lg transition-colors mt-6">
+
+                <button type="submit"
+                    class="w-full bg-accent-primary hover:bg-accent-primary-hover text-white font-medium py-2.5 px-4 rounded-lg transition-colors mt-6">
                     Save & Start
                 </button>
             </form>
         </div>
-        
-        <p class="text-center text-slate-500 text-sm mt-6">
-            Configuration will be saved to <code class="text-slate-400">vibetorrent.json</code>
+
+        <p class="text-center text-text-muted text-sm mt-6">
+            Configuration will be saved to <code
+                class="text-text-muted bg-bg-hover px-1 rounded">vibetorrent.json</code>
         </p>
     </div>
 </div>
