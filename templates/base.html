@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
+
     <!-- PWA / iOS Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="VibeTorrent">
     <meta name="theme-color" content="#0f121a">
-    
+
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/icon.svg">
-    
+
     <title>{% block title %}VibeTorrent{% endblock %}</title>
-    
+
     <!-- FOUC Prevention: Critical CSS inline -->
     <style>
         /* Critical CSS - prevents FOUC */
@@ -32,29 +33,36 @@
             --accent-orange: #d29922;
             --accent-red: #f85149;
         }
-        
-        html, body {
+
+        html,
+        body {
             background-color: var(--bg-primary) !important;
             color: var(--text-primary);
             margin: 0;
             padding: 0;
             height: 100%;
             width: 100%;
-            overflow: hidden; /* Prevent body scrolling */
-            position: fixed; /* Fix body to prevent bounce and scroll */
-            touch-action: none; /* Disable all browser gestures on body */
+            overflow: hidden;
+            /* Prevent body scrolling */
+            position: fixed;
+            /* Fix body to prevent bounce and scroll */
+            touch-action: none;
+            /* Disable all browser gestures on body */
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             -webkit-user-select: none;
         }
-        
+
         /* Re-enable selection for inputs and important text */
-        input, textarea, [contenteditable="true"], .selectable-text {
+        input,
+        textarea,
+        [contenteditable="true"],
+        .selectable-text {
             user-select: text !important;
             -webkit-user-select: text !important;
             touch-action: auto !important;
         }
-        
+
         /* App shell styles - this becomes our scrollable container */
         .app-shell {
             display: flex;
@@ -66,7 +74,7 @@
             top: 0;
             left: 0;
         }
-        
+
         .sidebar {
             width: 200px;
             background-color: var(--sidebar-bg);
@@ -75,7 +83,7 @@
             height: 100%;
             overflow-y: auto;
         }
-        
+
         .main-content {
             flex: 1;
             background-color: var(--bg-primary);
@@ -83,38 +91,42 @@
             overflow-y: auto;
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
-            touch-action: pan-y; /* Allow vertical scrolling but no zoom */
+            touch-action: pan-y;
+            /* Allow vertical scrolling but no zoom */
         }
     </style>
-    
+
     <!-- Tailwind CSS with cache busting -->
     <link rel="stylesheet" href="/static/css/output.css?v={{ cache_version }}">
-    
+
     <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@2.0.4" 
-            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" 
-            crossorigin="anonymous"></script>
-    
+    <script src="https://unpkg.com/htmx.org@2.0.4"
+        integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+        crossorigin="anonymous"></script>
+
     <!-- HTMX SSE Extension -->
     <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
-    
+
     <!-- Hyperscript -->
     <script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
-    
+
+    <!-- Idiomorph -->
+    <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
+
     <!-- FOUC Prevention Script -->
     <script>
         // Add loading class immediately
         document.documentElement.classList.add('js-loading');
-        
+
         // Remove loading class when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Small delay to ensure CSS is applied
-            requestAnimationFrame(function() {
+            requestAnimationFrame(function () {
                 document.documentElement.classList.remove('js-loading');
                 var overlay = document.getElementById('preload-overlay');
                 if (overlay) {
                     overlay.classList.add('loaded');
-                    setTimeout(function() {
+                    setTimeout(function () {
                         overlay.remove();
                     }, 200);
                 }
@@ -122,24 +134,28 @@
         });
     </script>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased" 
-      hx-boost="true"
-      _="on closeModal remove .modal-open from body then remove #modal-backdrop">
-    
+
+<body class="bg-slate-950 text-slate-100 antialiased" hx-boost="true" hx-ext="morph"
+    _="on closeModal remove .modal-open from body then remove #modal-backdrop">
+
     <!-- Preload overlay for FOUC prevention -->
     <div id="preload-overlay" class="preload-overlay">
         <div class="flex items-center gap-3">
-            <svg class="animate-spin h-8 w-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin h-8 w-8 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
             </svg>
             <span class="text-slate-400 text-lg font-medium">Loading VibeTorrent...</span>
         </div>
     </div>
-    
+
     {% block body %}{% endblock %}
-    
+
     <!-- Modal container -->
     <div id="modal-container"></div>
 </body>
+
 </html>
