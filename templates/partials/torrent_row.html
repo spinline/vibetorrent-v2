@@ -18,11 +18,11 @@
                 </svg>
                 {% endif %}
             </button>
-            <span class="truncate text-text-primary">{{ torrent.name }}</span>
+            <span class="truncate text-text-primary text-sm">{{ torrent.name }}</span>
         </div>
 
         <!-- Size -->
-        <div class="col-span-1 text-right text-text-muted text-sm flex items-center justify-end">
+        <div class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
             {{ torrent.size }}
         </div>
 
@@ -32,7 +32,7 @@
                 <div class="{{ torrent.progress_bar_class }} h-full rounded-full transition-all duration-300"
                     style="width: {{ torrent.progress }}%"></div>
             </div>
-            <span class="text-sm text-text-muted w-12 text-right">{{ torrent.progress_rounded }}%</span>
+            <span class="text-xs text-text-muted w-12 text-right">{{ torrent.progress_rounded }}%</span>
         </div>
 
         <!-- Status -->
@@ -68,18 +68,18 @@
         </div>
 
         <!-- Down Speed -->
-        <div class="col-span-1 text-right text-text-muted text-sm flex items-center justify-end">
+        <div class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
             {{ torrent.down_rate }}
         </div>
 
         <!-- Up Speed -->
-        <div class="col-span-1 text-right text-text-muted text-sm flex items-center justify-end">
+        <div class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
             {{ torrent.up_rate }}
         </div>
 
         <!-- ETA / Actions -->
         <div class="col-span-1 flex items-center justify-end gap-2">
-            <span class="text-text-muted text-sm">{{ torrent.eta }}</span>
+            <span class="text-text-muted text-xs">{{ torrent.eta }}</span>
 
             <!-- Action buttons (visible on hover) -->
             <div class="hidden group-hover:flex items-center gap-1">
@@ -162,7 +162,7 @@
             <div class="flex-1 min-w-0">
                 <!-- Title Row -->
                 <div class="flex items-start justify-between gap-2">
-                    <h3 class="text-text-primary font-medium leading-tight line-clamp-2">{{ torrent.name }}</h3>
+                    <h3 class="text-text-primary text-sm font-medium leading-tight line-clamp-2">{{ torrent.name }}</h3>
                     <!-- 3-dot menu -->
                     <button class="flex-shrink-0 p-1 -mr-1 text-text-muted hover:text-text-primary"
                         onclick="toggleMobileMenu(this)">
@@ -175,7 +175,7 @@
                 </div>
 
                 <!-- Info Row -->
-                <div class="flex items-center gap-1.5 mt-1.5 text-sm text-text-muted">
+                <div class="flex items-center gap-1.5 mt-1.5 text-xs text-text-muted">
                     <span>{{ torrent.size }}</span>
                     <span class="text-text-muted">•</span>
                     {% if torrent.status == "Downloading" %}
@@ -199,7 +199,7 @@
                         <div class="{{ torrent.progress_bar_class }} h-full rounded-full transition-all duration-300"
                             style="width: {{ torrent.progress }}%"></div>
                     </div>
-                    <div class="mt-1.5 text-sm {% if torrent.is_paused %}text-yellow-400{% else %}{% if torrent.status == "
+                    <div class="mt-1.5 text-xs {% if torrent.is_paused %}text-yellow-400{% else %}{% if torrent.status == "
                         Seeding" %}text-emerald-400{% else %}{% if torrent.status=="Downloading" %}text-blue-400{% else
                         %}text-text-muted{% endif %}{% endif %}{% endif %}">
                         {% if torrent.progress_rounded == 100 %}100%{% else %}%{{ torrent.progress_rounded }}

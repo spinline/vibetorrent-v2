@@ -3,7 +3,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
     </svg>
     <span class="text-xs text-text-muted uppercase">Download</span>
-    <span class="font-bold text-text-primary text-lg">{{ stats.down_rate_formatted() }}</span>
+    <span class="font-bold text-text-primary text-base">{{ stats.down_rate_formatted() }}</span>
 </div>
 
 <div class="flex items-center gap-2 text-blue-400">
@@ -11,7 +11,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
     </svg>
     <span class="text-xs text-text-muted uppercase">Upload</span>
-    <span class="font-bold text-text-primary text-lg">{{ stats.up_rate_formatted() }}</span>
+    <span class="font-bold text-text-primary text-base">{{ stats.up_rate_formatted() }}</span>
 </div>
 
 <div class="flex items-center gap-2 text-text-muted">
@@ -20,7 +20,7 @@
             d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
     </svg>
     <span class="text-xs text-text-muted uppercase">Free Disk</span>
-    <span class="font-bold text-text-primary text-lg">{{ stats.free_disk_formatted() }}</span>
+    <span class="font-bold text-text-primary text-base">{{ stats.free_disk_formatted() }}</span>
 </div>
 
 <div class="flex items-center gap-2 text-text-muted">
@@ -29,5 +29,5 @@
             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
     </svg>
     <span class="text-xs text-text-muted uppercase">Active Peers</span>
-    <span class="font-bold text-text-primary text-lg">{{ stats.active_peers }}</span>
+    <span class="font-bold text-text-primary text-base">{{ stats.active_peers }}</span>
 </div>
