@@ -47,18 +47,25 @@
 
   /* Light theme */
   [data-theme="light"] {
-    --bg-primary: #f8fafc;
+    --bg-primary: #f1f5f9;
+    /* Slate 100 - Main background */
     --bg-secondary: #ffffff;
     --bg-card: #ffffff;
-    --bg-hover: #f1f5f9;
-    --bg-input: #f1f5f9;
+    /* White cards */
+    --bg-hover: #e2e8f0;
+    /* Slate 200 */
+    --bg-input: #ffffff;
     --sidebar-bg: #ffffff;
     --sidebar-border: #e2e8f0;
-    --border-color: #e2e8f0;
-    --border-subtle: rgba(0, 0, 0, 0.05);
+    --border-color: #cbd5e1;
+    /* Slate 300 - sharper borders */
+    --border-subtle: rgba(0, 0, 0, 0.08);
     --text-primary: #0f172a;
+    /* Slate 900 */
     --text-secondary: #475569;
-    --text-muted: #94a3b8;
+    /* Slate 600 */
+    --text-muted: #64748b;
+    /* Slate 500 */
     --text-inverted: #e6edf3;
     --accent-primary: #059669;
     --accent-primary-hover: #047857;
@@ -67,11 +74,13 @@
     --accent-yellow: #ca8a04;
     --accent-orange: #ea580c;
     --accent-red: #dc2626;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-    --overlay-bg: rgba(0, 0, 0, 0.5);
-    --scrollbar-track: var(--bg-primary);
-    --scrollbar-thumb: #cbd5e1;
-    --scrollbar-thumb-hover: #94a3b8;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+    --overlay-bg: rgba(0, 0, 0, 0.2);
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: #94a3b8;
+    /* Slate 400 */
+    --scrollbar-thumb-hover: #64748b;
+    /* Slate 500 */
   }
 
   html {

@@ -1,82 +1,76 @@
 <!-- Modal Backdrop -->
-<div id="modal-backdrop" 
-     class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] flex items-center justify-center"
-     _="on click if event.target == me trigger closeModal">
-    
+<div id="modal-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] flex items-center justify-center"
+    _="on click if event.target == me trigger closeModal">
+
     <!-- Modal Content -->
     <div class="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-y-auto max-h-[90vh] touch-action-pan-y"
-         style="touch-action: pan-y;"
-         _="on click halt the event's bubbling">
-        
+        style="touch-action: pan-y;" _="on click halt the event's bubbling">
+
         <!-- Modal Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-700">
-            <h2 class="text-lg font-semibold text-white">Add Torrent</h2>
-            <button class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-                    _="on click trigger closeModal">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h2 class="text-lg font-semibold text-text-primary">Add Torrent</h2>
+            <button class="p-1.5 rounded-lg hover:bg-bg-hover text-text-muted hover:text-text-primary transition-colors"
+                _="on click trigger closeModal">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
-        
+
         <!-- Modal Body -->
-        <form hx-post="/add-torrent"
-              hx-target="#torrent-list"
-              hx-swap="innerHTML"
-              hx-encoding="multipart/form-data"
-              class="p-6 space-y-4">
-            
+        <form hx-post="/add-torrent" hx-target="#torrent-list" hx-swap="innerHTML" hx-encoding="multipart/form-data"
+            class="p-6 space-y-4">
+
             <!-- URL Input -->
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">
+                <label class="block text-sm font-medium text-text-secondary mb-2">
                     Torrent URL or Magnet Link
                 </label>
-                <input type="text" 
-                       name="url"
-                       placeholder="magnet:?xt=urn:btih:... or https://..."
-                       class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors">
+                <input type="text" name="url" placeholder="magnet:?xt=urn:btih:... or https://..."
+                    class="w-full bg-bg-input border border-border rounded-lg px-4 py-3 text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary transition-colors">
             </div>
-            
+
             <!-- Divider -->
             <div class="flex items-center gap-4">
-                <div class="flex-1 border-t border-slate-700"></div>
-                <span class="text-sm text-slate-500">or</span>
-                <div class="flex-1 border-t border-slate-700"></div>
+                <div class="flex-1 border-t border-border"></div>
+                <span class="text-sm text-text-muted">or</span>
+                <div class="flex-1 border-t border-border"></div>
             </div>
-            
+
             <!-- File Upload -->
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">
+                <label class="block text-sm font-medium text-text-secondary mb-2">
                     Upload .torrent File
                 </label>
                 <div class="relative">
-                    <input type="file" 
-                           name="file"
-                           accept=".torrent"
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <div class="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
-                        <svg class="w-10 h-10 mx-auto text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    <input type="file" name="file" accept=".torrent"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div
+                        class="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-accent-primary transition-colors">
+                        <svg class="w-10 h-10 mx-auto text-text-muted mb-2" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
-                        <p class="text-sm text-slate-400">
+                        <p class="text-sm text-text-secondary">
                             Click to upload or drag and drop
                         </p>
-                        <p class="text-xs text-slate-500 mt-1">
+                        <p class="text-xs text-text-muted mt-1">
                             .torrent files only
                         </p>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Submit Button -->
             <div class="flex justify-end gap-3 pt-4">
                 <button type="button"
-                        class="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
-                        _="on click trigger closeModal">
+                    class="px-4 py-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors"
+                    _="on click trigger closeModal">
                     Cancel
                 </button>
                 <button type="submit"
-                        class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors">
+                    class="px-6 py-2 bg-accent-primary hover:bg-accent-primary-hover text-white font-medium rounded-lg transition-colors">
                     Add Torrent
                 </button>
             </div>
