@@ -16,10 +16,41 @@
 
     <title>{% block title %}VibeTorrent{% endblock %}</title>
 
+    <!-- Theme Management -->
+    <script>
+        (function () {
+            const theme = localStorage.getItem('theme') || 'system';
+            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', isDark);
+
+            // Meta theme color update
+            const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            if (metaThemeColor) {
+                metaThemeColor.setAttribute('content', isDark ? '#0f121a' : '#ffffff');
+            }
+        })();
+    </script>
+
     <!-- FOUC Prevention: Critical CSS inline -->
     <style>
-        /* Critical CSS - prevents FOUC */
         :root {
+            /* Light Mode Default */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #f1f5f9;
+            --sidebar-bg: #f8fafc;
+            --sidebar-border: #e2e8f0;
+            --border-color: var(--sidebar-border);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-blue: #0969da;
+            --accent-green: #1a7f37;
+            --accent-orange: #9a6700;
+            --accent-red: #d1242f;
+        }
+
+        .dark {
+            /* Dark Mode */
             --bg-primary: #0f121a;
             --bg-secondary: #0d1117;
             --bg-card: #161b22;
@@ -43,14 +74,12 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
-            /* Prevent body scrolling */
             position: fixed;
-            /* Fix body to prevent bounce and scroll */
             touch-action: none;
-            /* Disable all browser gestures on body */
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             -webkit-user-select: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Re-enable selection for inputs and important text */
@@ -63,7 +92,7 @@
             touch-action: auto !important;
         }
 
-        /* App shell styles - this becomes our scrollable container */
+        /* App shell styles */
         .app-shell {
             display: flex;
             height: 100%;
@@ -73,6 +102,7 @@
             position: absolute;
             top: 0;
             left: 0;
+            transition: background-color 0.3s ease;
         }
 
         .sidebar {
@@ -82,6 +112,7 @@
             flex-shrink: 0;
             height: 100%;
             overflow-y: auto;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .main-content {
@@ -92,7 +123,7 @@
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
-            /* Allow vertical scrolling but no zoom */
+            transition: background-color 0.3s ease;
         }
     </style>
 
@@ -135,7 +166,7 @@
     </script>
 </head>
 
-<body class="bg-slate-950 text-slate-100 antialiased" hx-boost="true" hx-ext="morph"
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased" hx-boost="true" hx-ext="morph"
     _="on closeModal remove .modal-open from body then remove #modal-backdrop">
 
     <!-- Preload overlay for FOUC prevention -->
