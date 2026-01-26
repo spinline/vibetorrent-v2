@@ -2,18 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
-/* FOUC Prevention - Critical Base Styles */
+/* Theme System - CSS Custom Properties */
 @layer base {
+  :root {
+    /* Color scheme indicator for browser */
+    color-scheme: dark light;
+
+    /* Theme transition */
+    --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+
+    /* Layout */
+    --sidebar-width: 13rem;
+  }
+
+  /* Dark theme (default) */
+  :root,
+  [data-theme="dark"] {
+    --bg-primary: #0f121a;
+    --bg-secondary: #161922;
+    --bg-card: #1a1f2e;
+    --bg-hover: #1e2433;
+    --bg-input: #0d1117;
+    --sidebar-bg: #161922;
+    --sidebar-border: #21232c;
+    --border-color: #21232c;
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --text-inverted: #0f172a;
+    --accent-primary: #10b981;
+    --accent-primary-hover: #059669;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-yellow: #eab308;
+    --accent-orange: #f97316;
+    --accent-red: #ef4444;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --overlay-bg: rgba(0, 0, 0, 0.7);
+    --scrollbar-track: var(--bg-primary);
+    --scrollbar-thumb: #374151;
+    --scrollbar-thumb-hover: #4b5563;
+  }
+
+  /* Light theme */
+  [data-theme="light"] {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-hover: #f1f5f9;
+    --bg-input: #f1f5f9;
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #e2e8f0;
+    --border-color: #e2e8f0;
+    --border-subtle: rgba(0, 0, 0, 0.05);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --text-inverted: #e6edf3;
+    --accent-primary: #059669;
+    --accent-primary-hover: #047857;
+    --accent-blue: #2563eb;
+    --accent-green: #16a34a;
+    --accent-yellow: #ca8a04;
+    --accent-orange: #ea580c;
+    --accent-red: #dc2626;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    --scrollbar-track: var(--bg-primary);
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+  }
+
   html {
-    background-color: #0f121a;
-    color: #e6edf3;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     height: 100%;
     width: 100%;
     overflow: hidden;
+    transition: var(--theme-transition);
   }
-  
+
   body {
-    background-color: #0f121a;
+    background-color: var(--bg-primary);
     height: 100%;
     width: 100%;
     overflow: hidden;
@@ -23,87 +94,115 @@
     overscroll-behavior: none;
     user-select: none;
     -webkit-user-select: none;
+    transition: var(--theme-transition);
   }
 
-  input, textarea, [contenteditable="true"] {
+  input,
+  textarea,
+  [contenteditable="true"] {
     user-select: text !important;
     -webkit-user-select: text !important;
     touch-action: auto !important;
   }
-  
-  /* Prevent layout shift */
-  :root {
-    --sidebar-width: 13rem;
-    --bg-primary: #0f121a;
-    --sidebar-bg: #161922;
-    --sidebar-border: #21232c;
-  }
 }
 
 @layer components {
+
   /* Progress bar animation */
   .progress-bar {
     @apply h-full rounded-full transition-all duration-300;
   }
-  
+
   /* Status badges */
   .status-badge {
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .status-downloading {
-    @apply bg-blue-500/10 text-blue-400;
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--accent-blue);
   }
-  
+
   .status-seeding {
-    @apply bg-emerald-500/10 text-emerald-400;
+    background-color: rgba(34, 197, 94, 0.1);
+    color: var(--accent-green);
   }
-  
+
   .status-paused {
-    @apply bg-orange-500/10 text-orange-400;
+    background-color: rgba(249, 115, 22, 0.1);
+    color: var(--accent-orange);
   }
-  
+
   .status-hashing {
-    @apply bg-yellow-500/10 text-yellow-400;
+    background-color: rgba(234, 179, 8, 0.1);
+    color: var(--accent-yellow);
   }
-  
+
   .status-error {
-    @apply bg-red-500/10 text-red-400;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--accent-red);
   }
-  
-  /* Nav items */
+
+  /* Nav items - themed */
   .nav-item {
-    @apply flex items-center justify-between px-3 py-2.5 rounded-lg text-slate-300 mb-1 cursor-pointer transition-colors;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.5rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    cursor: pointer;
+    transition: var(--theme-transition);
   }
-  
+
   .nav-item:not(.active):hover {
-    @apply bg-slate-800/50;
+    background-color: var(--bg-hover);
   }
-  
+
   .nav-item.active {
-    @apply bg-slate-800 text-white;
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
   }
-  
-  /* Torrent row */
+
+  /* Torrent row - themed */
   .torrent-row {
-    @apply grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-800/50 hover:bg-slate-900/50 transition-colors;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: var(--theme-transition);
   }
-  
-  /* Modal */
+
+  .torrent-row:hover {
+    background-color: var(--bg-hover);
+  }
+
+  /* Modal - themed */
   .modal-backdrop {
-    @apply fixed inset-0 bg-black/70 backdrop-blur-sm z-40 flex items-center justify-center;
+    @apply fixed inset-0 backdrop-blur-sm z-40 flex items-center justify-center;
+    background-color: var(--overlay-bg);
   }
-  
+
   .modal-content {
-    @apply bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px var(--shadow-color);
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 1rem;
+    overflow: hidden;
+    transition: var(--theme-transition);
   }
-  
+
   /* Mobile sidebar open state */
   .sidebar-open {
     transform: translateX(0) !important;
   }
 
-  /* Left sidebar visual (gradient + subtle inner shadow/pattern) */
+  /* Left sidebar visual - themed */
   .sidebar-bg {
     background-color: var(--sidebar-bg);
     background-image: none;
@@ -111,40 +210,102 @@
     box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+    transition: var(--theme-transition);
+  }
+
+  /* Themed card for mobile torrent view */
+  .torrent-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin: 0.5rem 0.75rem;
+    transition: var(--theme-transition);
+  }
+
+  .torrent-card:active {
+    background-color: var(--bg-hover);
+  }
+
+  /* Themed inputs */
+  .theme-input {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    transition: var(--theme-transition);
+  }
+
+  .theme-input:focus {
+    border-color: var(--accent-primary);
+    outline: none;
+    box-shadow: 0 0 0 1px var(--accent-primary);
+  }
+
+  .theme-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Theme button */
+  .theme-btn-primary {
+    background-color: var(--accent-primary);
+    color: var(--text-inverted);
+    transition: var(--theme-transition);
+  }
+
+  .theme-btn-primary:hover {
+    background-color: var(--accent-primary-hover);
   }
 }
 
 @layer utilities {
-  /* Scrollbar styling */
+
+  /* Scrollbar styling - themed */
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #374151 var(--bg-primary);
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
-    background: var(--bg-primary);
+    background: var(--scrollbar-track);
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #374151;
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #4b5563;
+    background: var(--scrollbar-thumb-hover);
   }
-  
+
   /* Hide scrollbar but keep functionality */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Preload overlay - themed */
+  .preload-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.2s ease;
+  }
+
+  .preload-overlay.loaded {
+    opacity: 0;
+    pointer-events: none;
   }
 }
