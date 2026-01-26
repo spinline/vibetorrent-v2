@@ -1,5 +1,5 @@
+use crate::rtorrent::{GlobalStats, Torrent, TorrentState};
 use askama::Template;
-use crate::rtorrent::{Torrent, GlobalStats, TorrentState};
 use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 

@@ -31,7 +31,9 @@ pub async fn render_torrents_html(
 
     let counts = calculate_counts(all_torrents);
 
-    let list_template = TorrentListTemplate { torrents: torrent_views };
+    let list_template = TorrentListTemplate {
+        torrents: torrent_views,
+    };
     let counts_template = SidebarCountsTemplate {
         total_count: counts.total,
         downloading_count: counts.downloading,
@@ -92,8 +94,14 @@ fn calculate_counts(torrents: &[Torrent]) -> TorrentCounts {
             .iter()
             .filter(|t| t.state == TorrentState::Downloading)
             .count(),
-        seeding: torrents.iter().filter(|t| t.state == TorrentState::Seeding).count(),
-        paused: torrents.iter().filter(|t| t.state == TorrentState::Paused).count(),
+        seeding: torrents
+            .iter()
+            .filter(|t| t.state == TorrentState::Seeding)
+            .count(),
+        paused: torrents
+            .iter()
+            .filter(|t| t.state == TorrentState::Paused)
+            .count(),
     }
 }
 
@@ -105,13 +113,21 @@ fn apply_sorting(torrents: &mut [Torrent], query: &FilterQuery) {
             "name" => {
                 torrents.sort_by(|a, b| {
                     let cmp = a.name.to_lowercase().cmp(&b.name.to_lowercase());
-                    if is_desc { cmp.reverse() } else { cmp }
+                    if is_desc {
+                        cmp.reverse()
+                    } else {
+                        cmp
+                    }
                 });
             }
             "size" => {
                 torrents.sort_by(|a, b| {
                     let cmp = a.size_bytes.cmp(&b.size_bytes);
-                    if is_desc { cmp.reverse() } else { cmp }
+                    if is_desc {
+                        cmp.reverse()
+                    } else {
+                        cmp
+                    }
                 });
             }
             "progress" => {
@@ -120,19 +136,31 @@ fn apply_sorting(torrents: &mut [Torrent], query: &FilterQuery) {
                         .progress_percent()
                         .partial_cmp(&b.progress_percent())
                         .unwrap_or(std::cmp::Ordering::Equal);
-                    if is_desc { cmp.reverse() } else { cmp }
+                    if is_desc {
+                        cmp.reverse()
+                    } else {
+                        cmp
+                    }
                 });
             }
             "down_rate" => {
                 torrents.sort_by(|a, b| {
                     let cmp = a.down_rate.cmp(&b.down_rate);
-                    if is_desc { cmp.reverse() } else { cmp }
+                    if is_desc {
+                        cmp.reverse()
+                    } else {
+                        cmp
+                    }
                 });
             }
             "up_rate" => {
                 torrents.sort_by(|a, b| {
                     let cmp = a.up_rate.cmp(&b.up_rate);
-                    if is_desc { cmp.reverse() } else { cmp }
+                    if is_desc {
+                        cmp.reverse()
+                    } else {
+                        cmp
+                    }
                 });
             }
             _ => {}

@@ -7,25 +7,25 @@ use axum::{
 pub enum AppError {
     #[error("rTorrent connection error: {0}")]
     RtorrentConnection(String),
-    
+
     #[error("rTorrent SCGI error: {0}")]
     ScgiError(String),
-    
+
     #[error("XML-RPC error: {0}")]
     XmlRpcError(String),
 
     #[error("XML build error: {0}")]
     XmlBuildError(String),
-    
+
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
-    
+
     #[error("Template error: {0}")]
     TemplateError(String),
-    
+
     #[error("Not found: {0}")]
     NotFound(String),
-    
+
     #[error("Bad request: {0}")]
     BadRequest(String),
 }
@@ -42,9 +42,9 @@ impl IntoResponse for AppError {
             AppError::NotFound(_) => (StatusCode::NOT_FOUND, self.to_string()),
             AppError::BadRequest(_) => (StatusCode::BAD_REQUEST, self.to_string()),
         };
-        
+
         tracing::error!("Error: {}", message);
-        
+
         (status, message).into_response()
     }
 }

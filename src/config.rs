@@ -24,7 +24,7 @@ impl Config {
         if local_config.exists() {
             return local_config;
         }
-        
+
         // Try home directory
         if let Some(home) = dirs_path() {
             let home_config = home.join(".config").join("vibetorrent").join("config.json");
@@ -32,41 +32,40 @@ impl Config {
                 return home_config;
             }
         }
-        
+
         // Default to local
         local_config
     }
-    
+
     /// Load config from file
     pub fn load() -> Option<Self> {
         let path = Self::config_path();
         if !path.exists() {
             return None;
         }
-        
+
         let content = std::fs::read_to_string(&path).ok()?;
         serde_json::from_str(&content).ok()
     }
-    
+
     /// Save config to file
     pub fn save(&self) -> Result<(), String> {
         let path = Self::config_path();
-        
+
         // Create parent directories if needed
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)
                 .map_err(|e| format!("Failed to create config directory: {}", e))?;
         }
-        
+
         let content = serde_json::to_string_pretty(self)
             .map_err(|e| format!("Failed to serialize config: {}", e))?;
-        
-        std::fs::write(&path, content)
-            .map_err(|e| format!("Failed to write config: {}", e))?;
-        
+
+        std::fs::write(&path, content).map_err(|e| format!("Failed to write config: {}", e))?;
+
         Ok(())
     }
-    
+
     /// Check if config exists
     pub fn exists() -> bool {
         Self::config_path().exists()

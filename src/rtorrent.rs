@@ -1,10 +1,13 @@
 //! rTorrent SCGI Client
-//! 
+//!
 //! This module implements the SCGI protocol to communicate with rTorrent's
 //! XML-RPC interface over a Unix socket.
 
 use bytes::{BufMut, BytesMut};
-use quick_xml::{Reader, Writer, events::{Event, BytesStart, BytesText, BytesEnd}};
+use quick_xml::{
+    events::{BytesEnd, BytesStart, BytesText, Event},
+    Reader, Writer,
+};
 use std::io::Cursor;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::UnixStream;
@@ -50,19 +53,19 @@ impl Torrent {
             (self.completed_bytes as f64 / self.size_bytes as f64) * 100.0
         }
     }
-    
+
     pub fn size_formatted(&self) -> String {
         format_bytes(self.size_bytes)
     }
-    
+
     pub fn down_rate_formatted(&self) -> String {
         format!("{}/s", format_bytes(self.down_rate))
     }
-    
+
     pub fn up_rate_formatted(&self) -> String {
         format!("{}/s", format_bytes(self.up_rate))
     }
-    
+
     pub fn eta(&self) -> Option<String> {
         if self.complete || self.down_rate == 0 {
             return None;
@@ -71,7 +74,7 @@ impl Torrent {
         let seconds = remaining / self.down_rate;
         Some(format_duration(seconds))
     }
-    
+
     pub fn status_text(&self) -> &'static str {
         match self.state {
             TorrentState::Downloading => "Downloading",
@@ -81,7 +84,7 @@ impl Torrent {
             TorrentState::Error => "Error",
         }
     }
-    
+
     pub fn progress_bar_class(&self) -> &'static str {
         "bg-emerald-500"
     }
@@ -92,7 +95,7 @@ fn format_bytes(bytes: i64) -> String {
     const MB: i64 = KB * 1024;
     const GB: i64 = MB * 1024;
     const TB: i64 = GB * 1024;
-    
+
     if bytes >= TB {
         format!("{:.1} TB", bytes as f64 / TB as f64)
     } else if bytes >= GB {
@@ -110,7 +113,7 @@ fn format_duration(seconds: i64) -> String {
     let hours = seconds / 3600;
     let minutes = (seconds % 3600) / 60;
     let secs = seconds % 60;
-    
+
     if hours > 0 {
         format!("{}h {}m", hours, minutes)
     } else if minutes > 0 {
@@ -132,11 +135,11 @@ impl GlobalStats {
     pub fn down_rate_formatted(&self) -> String {
         format!("{}/s", format_bytes(self.down_rate))
     }
-    
+
     pub fn up_rate_formatted(&self) -> String {
         format!("{}/s", format_bytes(self.up_rate))
     }
-    
+
     pub fn free_disk_formatted(&self) -> String {
         format_bytes(self.free_disk_space)
     }
@@ -146,64 +149,76 @@ impl RtorrentClient {
     pub fn new(socket_path: String) -> Self {
         Self { socket_path }
     }
-    
+
     /// Test connection to rtorrent by attempting to connect to the socket
     pub async fn test_connection(&self) -> bool {
         self.connect().await.is_ok()
     }
-    
+
     async fn connect(&self) -> Result<UnixStream> {
-        UnixStream::connect(&self.socket_path)
-            .await
-            .map_err(|e| AppError::RtorrentConnection(format!(
-                "Failed to connect to {}: {}", self.socket_path, e
-            )))
+        UnixStream::connect(&self.socket_path).await.map_err(|e| {
+            AppError::RtorrentConnection(format!(
+                "Failed to connect to {}: {}",
+                self.socket_path, e
+            ))
+        })
     }
-    
+
     async fn send_request(&self, xml_body: &str) -> Result<String> {
         let mut stream = self.connect().await?;
-        
+
         // Build SCGI request
         let content_length = xml_body.len();
         let headers = format!(
             "CONTENT_LENGTH\0{}\0SCGI\01\0REQUEST_METHOD\0POST\0REQUEST_URI\0/RPC2\0",
             content_length
         );
-        
+
         // Netstring format: length:content,
         let mut request = BytesMut::new();
         request.put_slice(format!("{}:", headers.len()).as_bytes());
         request.put_slice(headers.as_bytes());
         request.put_u8(b',');
         request.put_slice(xml_body.as_bytes());
-        
+
         // Send request
-        stream.write_all(&request).await
+        stream
+            .write_all(&request)
+            .await
             .map_err(|e| AppError::ScgiError(format!("Write error: {}", e)))?;
-        
+
         // Read response
         let mut response = Vec::new();
-        stream.read_to_end(&mut response).await
+        stream
+            .read_to_end(&mut response)
+            .await
             .map_err(|e| AppError::ScgiError(format!("Read error: {}", e)))?;
-        
+
         // Parse HTTP response - skip headers
         let response_str = String::from_utf8_lossy(&response);
-        let body_start = response_str.find("\r\n\r\n")
+        let body_start = response_str
+            .find("\r\n\r\n")
             .or_else(|| response_str.find("\n\n"))
-            .map(|i| if response_str[i..].starts_with("\r\n") { i + 4 } else { i + 2 })
+            .map(|i| {
+                if response_str[i..].starts_with("\r\n") {
+                    i + 4
+                } else {
+                    i + 2
+                }
+            })
             .unwrap_or(0);
-        
+
         Ok(response_str[body_start..].to_string())
     }
-    
+
     fn build_multicall_xml(method: &str, params: &[&str]) -> Result<String> {
         let mut writer = Writer::new(Cursor::new(Vec::new()));
-        
+
         // Start methodCall
         writer
             .write_event(Event::Start(BytesStart::new("methodCall")))
             .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
-        
+
         // methodName
         writer
             .write_event(Event::Start(BytesStart::new("methodName")))
@@ -214,12 +229,12 @@ impl RtorrentClient {
         writer
             .write_event(Event::End(BytesEnd::new("methodName")))
             .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
-        
+
         // params
         writer
             .write_event(Event::Start(BytesStart::new("params")))
             .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
-        
+
         // First param (empty string for d.multicall2)
         writer
             .write_event(Event::Start(BytesStart::new("param")))
@@ -239,7 +254,7 @@ impl RtorrentClient {
         writer
             .write_event(Event::End(BytesEnd::new("param")))
             .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
-        
+
         // Second param (view name)
         writer
             .write_event(Event::Start(BytesStart::new("param")))
@@ -262,7 +277,7 @@ impl RtorrentClient {
         writer
             .write_event(Event::End(BytesEnd::new("param")))
             .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
-        
+
         // Additional method params
         for param in params {
             writer
@@ -287,20 +302,20 @@ impl RtorrentClient {
                 .write_event(Event::End(BytesEnd::new("param")))
                 .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         }
-        
+
         writer
             .write_event(Event::End(BytesEnd::new("params")))
             .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         writer
             .write_event(Event::End(BytesEnd::new("methodCall")))
             .map_err(|e| AppError::XmlBuildError(e.to_string()))?;
-        
+
         let result = writer.into_inner().into_inner();
         let xml_body =
             String::from_utf8(result).map_err(|e| AppError::XmlBuildError(e.to_string()))?;
         Ok(format!("<?xml version=\"1.0\"?>\n{}", xml_body))
     }
-    
+
     fn build_simple_xml(method: &str) -> String {
         format!(
             r#"<?xml version="1.0"?>
@@ -311,7 +326,7 @@ impl RtorrentClient {
             method
         )
     }
-    
+
     fn build_single_param_xml(method: &str, param: &str) -> String {
         format!(
             r#"<?xml version="1.0"?>
@@ -324,7 +339,7 @@ impl RtorrentClient {
             method, param
         )
     }
-    
+
     pub async fn get_torrents(&self) -> Result<Vec<Torrent>> {
         let xml = Self::build_multicall_xml(
             "d.multicall2",
@@ -343,45 +358,43 @@ impl RtorrentClient {
                 "d.ratio=",
             ],
         )?;
-        
+
         tracing::trace!("get_torrents request XML length: {} bytes", xml.len());
         let response = self.send_request(&xml).await?;
         tracing::trace!("get_torrents response length: {} bytes", response.len());
         self.parse_torrents_response(&response)
     }
-    
+
     fn parse_torrents_response(&self, xml: &str) -> Result<Vec<Torrent>> {
         let mut torrents = Vec::new();
         let mut reader = Reader::from_str(xml);
         reader.config_mut().trim_text(true);
-        
+
         let mut current_values: Vec<String> = Vec::new();
         let mut in_value_tag = false;
         let mut value_collected = false;
         let mut in_array = false;
         let mut array_depth = 0;
         let mut buf = Vec::new();
-        
+
         loop {
             match reader.read_event_into(&mut buf) {
-                Ok(Event::Start(e)) => {
-                    match e.name().as_ref() {
-                        b"array" => {
-                            array_depth += 1;
-                            if array_depth == 2 {
-                                in_array = true;
-                                current_values.clear();
-                            }
+                Ok(Event::Start(e)) => match e.name().as_ref() {
+                    b"array" => {
+                        array_depth += 1;
+                        if array_depth == 2 {
+                            in_array = true;
+                            current_values.clear();
                         }
-                        b"i4" | b"i8" | b"int" | b"string" | b"double" => {
-                            if in_array {
-                                in_value_tag = true;
-                                value_collected = false;
-                            }
-                        }
-                        _ => {}
                     }
-                }
+                    b"i4" | b"i8" | b"int" | b"string" | b"double" => {
+                        if in_array {
+                            in_value_tag = true;
+                            value_collected = false;
+                        }
+                    }
+                    _ => {}
+                },
                 Ok(Event::End(e)) => {
                     match e.name().as_ref() {
                         b"array" => {
@@ -391,10 +404,12 @@ impl RtorrentClient {
                                 let is_open = current_values[7].parse::<i64>().unwrap_or(0) == 1;
                                 let is_hashing = current_values[8].parse::<i64>().unwrap_or(0) == 1;
                                 let complete = current_values[9].parse::<i64>().unwrap_or(0) == 1;
-                                
+
                                 let state = if is_hashing {
                                     TorrentState::Hashing
-                                } else if !current_values[10].is_empty() && current_values[10] != "0" {
+                                } else if !current_values[10].is_empty()
+                                    && current_values[10] != "0"
+                                {
                                     TorrentState::Error
                                 } else if !is_active && !is_open {
                                     TorrentState::Paused
@@ -405,7 +420,7 @@ impl RtorrentClient {
                                 } else {
                                     TorrentState::Downloading
                                 };
-                                
+
                                 torrents.push(Torrent {
                                     hash: current_values[0].clone(),
                                     name: current_values[1].clone(),
@@ -418,7 +433,8 @@ impl RtorrentClient {
                                     is_hashing,
                                     complete,
                                     message: current_values[10].clone(),
-                                    ratio: current_values[11].parse::<f64>().unwrap_or(0.0) / 1000.0,
+                                    ratio: current_values[11].parse::<f64>().unwrap_or(0.0)
+                                        / 1000.0,
                                     state,
                                 });
                             }
@@ -463,30 +479,30 @@ impl RtorrentClient {
             }
             buf.clear();
         }
-        
+
         tracing::trace!("Parsed {} torrents", torrents.len());
-        
+
         Ok(torrents)
     }
-    
+
     pub async fn get_global_stats(&self) -> Result<GlobalStats> {
         // Get download rate
         let down_xml = Self::build_simple_xml("throttle.global_down.rate");
         let down_response = self.send_request(&down_xml).await?;
         let down_rate = self.parse_int_response(&down_response).unwrap_or(0);
-        
+
         // Get upload rate
         let up_xml = Self::build_simple_xml("throttle.global_up.rate");
         let up_response = self.send_request(&up_xml).await?;
         let up_rate = self.parse_int_response(&up_response).unwrap_or(0);
-        
+
         // Get free disk space
         let _disk_xml = Self::build_simple_xml("system.files.status_failures");
         let free_disk_space = 2_000_000_000_000i64; // 2TB placeholder - would need actual path
-        
+
         // Count active peers (simplified)
         let active_peers = 0i64;
-        
+
         Ok(GlobalStats {
             down_rate,
             up_rate,
@@ -494,21 +510,19 @@ impl RtorrentClient {
             active_peers,
         })
     }
-    
+
     fn parse_int_response(&self, xml: &str) -> Option<i64> {
         let mut reader = Reader::from_str(xml);
         reader.config_mut().trim_text(true);
         let mut buf = Vec::new();
         let mut in_value = false;
-        
+
         loop {
             match reader.read_event_into(&mut buf) {
-                Ok(Event::Start(e)) => {
-                    match e.name().as_ref() {
-                        b"i4" | b"i8" | b"int" => in_value = true,
-                        _ => {}
-                    }
-                }
+                Ok(Event::Start(e)) => match e.name().as_ref() {
+                    b"i4" | b"i8" | b"int" => in_value = true,
+                    _ => {}
+                },
                 Ok(Event::Text(e)) if in_value => {
                     return e.unescape().ok()?.parse().ok();
                 }
@@ -520,7 +534,7 @@ impl RtorrentClient {
         }
         None
     }
-    
+
     pub async fn get_client_version(&self) -> Result<String> {
         let xml = Self::build_simple_xml("system.client_version");
         let response = self.send_request(&xml).await?;
@@ -560,7 +574,7 @@ impl RtorrentClient {
         self.send_request(&xml).await?;
         Ok(())
     }
-    
+
     pub async fn resume_torrent(&self, hash: &str) -> Result<()> {
         let xml = Self::build_single_param_xml("d.open", hash);
         self.send_request(&xml).await?;
@@ -568,13 +582,13 @@ impl RtorrentClient {
         self.send_request(&xml).await?;
         Ok(())
     }
-    
+
     pub async fn remove_torrent(&self, hash: &str) -> Result<()> {
         let xml = Self::build_single_param_xml("d.erase", hash);
         self.send_request(&xml).await?;
         Ok(())
     }
-    
+
     pub async fn add_torrent_url(&self, url: &str) -> Result<()> {
         tracing::info!("Adding torrent from URL: {}", url);
         // Escape XML special characters in the URL
@@ -600,7 +614,7 @@ impl RtorrentClient {
         tracing::trace!("add_torrent_url response length: {} bytes", response.len());
         Ok(())
     }
-    
+
     pub async fn add_torrent_file(&self, data: &[u8]) -> Result<()> {
         tracing::info!("Adding torrent from file, size: {} bytes", data.len());
         // For file uploads, we use load.raw_start with base64 encoded data
@@ -625,28 +639,28 @@ impl RtorrentClient {
 fn base64_encode(data: &[u8]) -> String {
     const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut result = String::new();
-    
+
     for chunk in data.chunks(3) {
         let mut n: u32 = 0;
         for (i, &byte) in chunk.iter().enumerate() {
             n |= (byte as u32) << (16 - i * 8);
         }
-        
+
         result.push(ALPHABET[(n >> 18 & 0x3F) as usize] as char);
         result.push(ALPHABET[(n >> 12 & 0x3F) as usize] as char);
-        
+
         if chunk.len() > 1 {
             result.push(ALPHABET[(n >> 6 & 0x3F) as usize] as char);
         } else {
             result.push('=');
         }
-        
+
         if chunk.len() > 2 {
             result.push(ALPHABET[(n & 0x3F) as usize] as char);
         } else {
             result.push('=');
         }
     }
-    
+
     result
 }

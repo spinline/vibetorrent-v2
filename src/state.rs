@@ -1,7 +1,7 @@
-use tokio::sync::{broadcast, watch, RwLock};
 use std::collections::HashSet;
 use std::sync::Arc;
 use std::time::Duration;
+use tokio::sync::{broadcast, watch, RwLock};
 use tokio::time::interval;
 
 use crate::rtorrent::RtorrentClient;
@@ -42,11 +42,11 @@ impl AppState {
         state.spawn_poller(shutdown_rx);
         state
     }
-    
+
     pub async fn is_starred(&self, hash: &str) -> bool {
         self.starred_torrents.read().await.contains(hash)
     }
-    
+
     pub async fn toggle_star(&self, hash: &str) -> bool {
         let mut starred = self.starred_torrents.write().await;
         if starred.contains(hash) {

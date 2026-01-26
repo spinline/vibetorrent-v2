@@ -22,7 +22,7 @@ use crate::templates::StatsTemplate;
 use askama::Template;
 
 /// SSE endpoint for torrent list updates
-/// 
+///
 /// Clients connect with optional filter/sort parameters:
 /// GET /events/torrents?search=ubuntu&sort=name&order=asc
 pub async fn torrent_events(
@@ -31,7 +31,9 @@ pub async fn torrent_events(
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let initial = match state.latest_torrents().await {
         Some(torrents) => {
-            let html = match torrents_service::render_torrents_html(&state, &query, None, &torrents).await {
+            let html = match torrents_service::render_torrents_html(&state, &query, None, &torrents)
+                .await
+            {
                 Ok(html) => html,
                 Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
             };
@@ -49,9 +51,15 @@ pub async fn torrent_events(
             async move {
                 match msg {
                     Ok(torrents) => {
-                        let html = match torrents_service::render_torrents_html(&state, &query, None, &torrents).await {
+                        let html = match torrents_service::render_torrents_html(
+                            &state, &query, None, &torrents,
+                        )
+                        .await
+                        {
                             Ok(html) => html,
-                            Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+                            Err(_) => String::from(
+                                "<div class=\"text-red-400\">Error loading torrents</div>",
+                            ),
                         };
                         Some(Ok(Event::default().event("torrents").data(html)))
                     }
@@ -78,7 +86,14 @@ pub async fn torrent_filtered_events(
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let initial = match state.latest_torrents().await {
         Some(torrents) => {
-            let html = match torrents_service::render_torrents_html(&state, &query, Some(&filter), &torrents).await {
+            let html = match torrents_service::render_torrents_html(
+                &state,
+                &query,
+                Some(&filter),
+                &torrents,
+            )
+            .await
+            {
                 Ok(html) => html,
                 Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
             };
@@ -98,9 +113,18 @@ pub async fn torrent_filtered_events(
             async move {
                 match msg {
                     Ok(torrents) => {
-                        let html = match torrents_service::render_torrents_html(&state, &query, Some(&filter), &torrents).await {
+                        let html = match torrents_service::render_torrents_html(
+                            &state,
+                            &query,
+                            Some(&filter),
+                            &torrents,
+                        )
+                        .await
+                        {
                             Ok(html) => html,
-                            Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+                            Err(_) => String::from(
+                                "<div class=\"text-red-400\">Error loading torrents</div>",
+                            ),
                         };
                         Some(Ok(Event::default().event("torrents").data(html)))
                     }
@@ -125,7 +149,9 @@ pub async fn stats_events(
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let initial = match state.latest_stats().await {
         Some(stats) => {
-            let template = StatsTemplate { stats: (*stats).clone() };
+            let template = StatsTemplate {
+                stats: (*stats).clone(),
+            };
             let html = template.render().unwrap_or_default();
             Some(Ok(Event::default().event("stats").data(html)))
         }
@@ -135,7 +161,9 @@ pub async fn stats_events(
     let updates = BroadcastStream::new(state.subscribe_stats()).filter_map(|msg| async move {
         match msg {
             Ok(stats) => {
-                let template = StatsTemplate { stats: (*stats).clone() };
+                let template = StatsTemplate {
+                    stats: (*stats).clone(),
+                };
                 let html = template.render().unwrap_or_default();
                 Some(Ok(Event::default().event("stats").data(html)))
             }
@@ -151,4 +179,3 @@ pub async fn stats_events(
             .text("keep-alive"),
     )
 }
-

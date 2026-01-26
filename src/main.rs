@@ -2,20 +2,20 @@ mod config;
 mod error;
 mod routes;
 mod rtorrent;
-mod sse;
 mod services;
+mod sse;
 mod state;
 mod templates;
 
+use askama::Template;
 use axum::{
-    routing::{get, post},
-    Router,
-    response::{Response, Html, Redirect, IntoResponse},
-    http::{header, HeaderValue, StatusCode, Request},
-    extract::{Path, State},
     body::Body,
-    Form,
+    extract::{Path, State},
+    http::{header, HeaderValue, Request, StatusCode},
     middleware::{self, Next},
+    response::{Html, IntoResponse, Redirect, Response},
+    routing::{get, post},
+    Form, Router,
 };
 use clap::Parser;
 use rust_embed::Embed;
@@ -23,7 +23,6 @@ use serde::Deserialize;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tower_http::compression::CompressionLayer;
-use askama::Template;
 
 use crate::config::Config;
 use crate::state::AppState;
@@ -37,25 +36,25 @@ pub struct SharedState {
 
 impl SharedState {
     pub fn new(config: Option<Config>) -> Self {
-        let app_state = config.as_ref().map(|c| {
-            Arc::new(AppState::new(c.scgi_socket.clone()))
-        });
+        let app_state = config
+            .as_ref()
+            .map(|c| Arc::new(AppState::new(c.scgi_socket.clone())));
         Self {
             app_state: RwLock::new(app_state),
             config: RwLock::new(config),
         }
     }
-    
+
     pub async fn update_config(&self, config: Config) {
         let app_state = Arc::new(AppState::new(config.scgi_socket.clone()));
         *self.app_state.write().await = Some(app_state);
         *self.config.write().await = Some(config);
     }
-    
+
     pub async fn is_configured(&self) -> bool {
         self.config.read().await.is_some()
     }
-    
+
     pub async fn get_app_state(&self) -> Option<Arc<AppState>> {
         self.app_state.read().await.clone()
     }
@@ -69,11 +68,11 @@ struct Args {
     /// rTorrent SCGI socket path or TCP address
     #[arg(short, long)]
     socket: Option<String>,
-    
+
     /// Bind address (IP:PORT)
     #[arg(short, long)]
     bind: Option<String>,
-    
+
     /// Run setup wizard (force)
     #[arg(long)]
     setup: bool,
@@ -87,7 +86,7 @@ struct StaticFiles;
 // Handler to serve embedded static files
 async fn serve_static(Path(path): Path<String>) -> Response<Body> {
     let path = path.as_str();
-    
+
     match StaticFiles::get(path) {
         Some(content) => {
             let mime = mime_guess::from_path(path).first_or_octet_stream();
@@ -128,12 +127,12 @@ async fn setup_page(error: Option<String>) -> Html<String> {
         cache_version: crate::templates::CACHE_VERSION.clone(),
     };
 
-        match template.render() {
-                Ok(html) => Html(html),
-                Err(err) => {
-                        tracing::error!("Failed to render setup template: {}", err);
-                        Html(format!(
-                                r#"<!doctype html>
+    match template.render() {
+        Ok(html) => Html(html),
+        Err(err) => {
+            tracing::error!("Failed to render setup template: {}", err);
+            Html(format!(
+                r#"<!doctype html>
 <html lang=\"en\">
     <head>
         <meta charset=\"utf-8\" />
@@ -155,10 +154,10 @@ async fn setup_page(error: Option<String>) -> Html<String> {
         </div>
     </body>
 </html>"#,
-                                err
-                        ))
-                }
+                err
+            ))
         }
+    }
 }
 
 async fn setup_get() -> Html<String> {
@@ -173,7 +172,7 @@ async fn setup_post(
         scgi_socket: form.scgi_socket.trim().to_string(),
         bind_address: form.bind_address.trim().to_string(),
     };
-    
+
     // Validate socket path
     if config.scgi_socket.is_empty() {
         let html = setup_page(Some("SCGI socket path is required".to_string())).await;
@@ -183,7 +182,7 @@ async fn setup_post(
             .body(Body::from(html.0))
             .unwrap();
     }
-    
+
     // Test rtorrent connection before saving
     let client = crate::rtorrent::RtorrentClient::new(config.scgi_socket.clone());
     if !client.test_connection().await {
@@ -197,7 +196,7 @@ async fn setup_post(
             .body(Body::from(html.0))
             .unwrap();
     }
-    
+
     // Save config to file
     if let Err(e) = config.save() {
         let html = setup_page(Some(e)).await;
@@ -207,10 +206,10 @@ async fn setup_post(
             .body(Body::from(html.0))
             .unwrap();
     }
-    
+
     // Update runtime state - this enables the main app without restart!
     shared.update_config(config).await;
-    
+
     // Redirect to main app
     Redirect::to("/").into_response()
 }
@@ -222,17 +221,17 @@ async fn setup_guard(
     next: Next,
 ) -> Response<Body> {
     let path = request.uri().path();
-    
+
     // Always allow setup routes and static files
     if path.starts_with("/setup") || path.starts_with("/static/") {
         return next.run(request).await;
     }
-    
+
     // Check if configured
     if !shared.is_configured().await {
         return Redirect::to("/setup").into_response();
     }
-    
+
     next.run(request).await
 }
 
@@ -245,89 +244,103 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn torrents_list_handler(
         State(shared): State<Arc<SharedState>>,
         query: axum::extract::Query<routes::FilterQuery>,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            routes::torrents_list(State(state), query).await.into_response()
+            routes::torrents_list(State(state), query)
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn torrents_filtered_handler(
         State(shared): State<Arc<SharedState>>,
         Path(filter): Path<String>,
         query: axum::extract::Query<routes::FilterQuery>,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            routes::torrents_filtered(State(state), Path(filter), query).await.into_response()
+            routes::torrents_filtered(State(state), Path(filter), query)
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn torrent_pause_handler(
         State(shared): State<Arc<SharedState>>,
         Path(hash): Path<String>,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            routes::torrent_pause(State(state), Path(hash)).await.into_response()
+            routes::torrent_pause(State(state), Path(hash))
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn torrent_resume_handler(
         State(shared): State<Arc<SharedState>>,
         Path(hash): Path<String>,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            routes::torrent_resume(State(state), Path(hash)).await.into_response()
+            routes::torrent_resume(State(state), Path(hash))
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn torrent_remove_handler(
         State(shared): State<Arc<SharedState>>,
         Path(hash): Path<String>,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            routes::torrent_remove(State(state), Path(hash)).await.into_response()
+            routes::torrent_remove(State(state), Path(hash))
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn torrent_toggle_star_handler(
         State(shared): State<Arc<SharedState>>,
         Path(hash): Path<String>,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            routes::torrent_toggle_star(State(state), Path(hash)).await.into_response()
+            routes::torrent_toggle_star(State(state), Path(hash))
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn add_torrent_modal_handler() -> Response<Body> {
         routes::add_torrent_modal().await.into_response()
     }
-    
+
     async fn add_torrent_handler(
         State(shared): State<Arc<SharedState>>,
         form: axum::extract::Multipart,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            routes::add_torrent(State(state), form).await.into_response()
+            routes::add_torrent(State(state), form)
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn stats_handler(State(shared): State<Arc<SharedState>>) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
             routes::stats_partial(State(state)).await.into_response()
@@ -335,31 +348,35 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     // SSE handlers for real-time updates
     async fn sse_torrents_handler(
         State(shared): State<Arc<SharedState>>,
         query: axum::extract::Query<routes::FilterQuery>,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            sse::torrent_events(State(state), query).await.into_response()
+            sse::torrent_events(State(state), query)
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn sse_torrents_filtered_handler(
         State(shared): State<Arc<SharedState>>,
         Path(filter): Path<String>,
         query: axum::extract::Query<routes::FilterQuery>,
     ) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
-            sse::torrent_filtered_events(State(state), Path(filter), query).await.into_response()
+            sse::torrent_filtered_events(State(state), Path(filter), query)
+                .await
+                .into_response()
         } else {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     async fn sse_stats_handler(State(shared): State<Arc<SharedState>>) -> Response<Body> {
         if let Some(state) = shared.get_app_state().await {
             sse::stats_events(State(state)).await.into_response()
@@ -367,16 +384,14 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
             Redirect::to("/setup").into_response()
         }
     }
-    
+
     // Setup route for first-time or forced setup
-    async fn setup_get_handler(
-        State(_shared): State<Arc<SharedState>>,
-    ) -> Response<Body> {
+    async fn setup_get_handler(State(_shared): State<Arc<SharedState>>) -> Response<Body> {
         setup_get().await.into_response()
     }
-    
+
     let shared_clone = shared.clone();
-    
+
     let router = Router::new()
         // Setup routes
         .route("/setup", get(setup_get_handler))
@@ -389,7 +404,10 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
         .route("/torrent/{hash}/pause", post(torrent_pause_handler))
         .route("/torrent/{hash}/resume", post(torrent_resume_handler))
         .route("/torrent/{hash}/remove", post(torrent_remove_handler))
-        .route("/torrent/{hash}/toggle-star", post(torrent_toggle_star_handler))
+        .route(
+            "/torrent/{hash}/toggle-star",
+            post(torrent_toggle_star_handler),
+        )
         // Add torrent
         .route("/add-torrent", get(add_torrent_modal_handler))
         .route("/add-torrent", post(add_torrent_handler))
@@ -397,7 +415,10 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
         .route("/stats", get(stats_handler))
         // SSE endpoints for real-time updates
         .route("/events/torrents", get(sse_torrents_handler))
-        .route("/events/torrents/filter/{filter}", get(sse_torrents_filtered_handler))
+        .route(
+            "/events/torrents/filter/{filter}",
+            get(sse_torrents_filtered_handler),
+        )
         .route("/events/stats", get(sse_stats_handler))
         // Static files (embedded in binary)
         .route("/static/{*path}", get(serve_static))
@@ -406,7 +427,7 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
         // Middleware - redirect to setup if not configured
         .layer(middleware::from_fn_with_state(shared_clone, setup_guard))
         .layer(CompressionLayer::new());
-    
+
     router
 }
 
@@ -414,13 +435,16 @@ fn create_router(shared: Arc<SharedState>, _force_setup: bool) -> Router {
 async fn main() -> anyhow::Result<()> {
     // Parse CLI arguments
     let args = Args::parse();
-    
+
     // Load config if exists (CLI args can override)
     let mut config = if let Some(socket) = args.socket.as_ref() {
         // CLI socket provided - use it
         Some(Config {
             scgi_socket: socket.clone(),
-            bind_address: args.bind.clone().unwrap_or_else(|| "0.0.0.0:3000".to_string()),
+            bind_address: args
+                .bind
+                .clone()
+                .unwrap_or_else(|| "0.0.0.0:3000".to_string()),
         })
     } else if Config::exists() && !args.setup {
         // Config file exists and not forcing setup
@@ -429,7 +453,7 @@ async fn main() -> anyhow::Result<()> {
         // No config - will show setup
         None
     };
-    
+
     // Test rtorrent connection if config exists
     if let Some(ref cfg) = config {
         let client = crate::rtorrent::RtorrentClient::new(cfg.scgi_socket.clone());
@@ -439,15 +463,16 @@ async fn main() -> anyhow::Result<()> {
             config = None; // Force setup mode
         }
     }
-    
+
     // Determine bind address
-    let bind_addr = args.bind
+    let bind_addr = args
+        .bind
         .or_else(|| config.as_ref().map(|c| c.bind_address.clone()))
         .unwrap_or_else(|| "0.0.0.0:3000".to_string());
-    
+
     // Create shared state
     let shared = Arc::new(SharedState::new(config.clone()));
-    
+
     // Print startup message
     if config.is_some() && !args.setup {
         let cfg = config.as_ref().unwrap();
@@ -458,13 +483,13 @@ async fn main() -> anyhow::Result<()> {
         println!("🔧 VibeTorrent Setup");
         println!("   Open http://{} in your browser", bind_addr);
     }
-    
+
     // Create unified router
     let app = create_router(shared, args.setup);
-    
+
     // Start server
     let listener = tokio::net::TcpListener::bind(&bind_addr).await?;
     axum::serve(listener, app).await?;
-    
+
     Ok(())
 }
