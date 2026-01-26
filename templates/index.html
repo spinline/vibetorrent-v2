@@ -390,6 +390,7 @@
             searchInput.addEventListener('input', function () {
                 currentSearch = this.value;
                 updateClearButton();
+                closeAllRowMenus(); // Close menus on search
                 if (searchDebounceTimer) {
                     clearTimeout(searchDebounceTimer);
                 }
@@ -415,12 +416,14 @@
             searchInput.value = '';
             currentSearch = '';
             clearBtn?.classList.add('hidden');
+            closeAllRowMenus(); // Close menus on clear
             reconnectSse();
         }
     }
 
     function setFilter(filter) {
         currentFilter = filter;
+        closeAllRowMenus(); // Close menus on filter change
 
         // Update active state on nav items
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -602,6 +605,7 @@
         // Reconnect SSE with new sort params
         reconnectSse();
         closeMobileSortMenu();
+        closeAllRowMenus(); // Close menus on sort change
     }
 
     function syncMobileSortUI() {
@@ -643,7 +647,13 @@
 
 
 
-    // Close mobile sort menu when clicking outside
+    function closeAllRowMenus() {
+        document.querySelectorAll('.mobile-actions:not(.hidden)').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+
+    // Close mobile menu when clicking outside
     document.addEventListener('click', (e) => {
         const menu = document.getElementById('mobile-sort-menu');
         const btn = document.getElementById('mobile-sort-btn');
