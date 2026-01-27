@@ -29,11 +29,14 @@
 
         <!-- Progress -->
         <div class="col-span-2 flex items-center gap-3">
-            <div class="flex-1 h-2 bg-bg-secondary rounded-full overflow-hidden">
-                <div class="{{ torrent.progress_bar_class }} h-full rounded-full transition-all duration-300"
+            <div id="progress-container-{{ torrent.hash }}"
+                class="flex-1 h-2 bg-bg-secondary rounded-full overflow-hidden">
+                <div id="progress-bar-{{ torrent.hash }}"
+                    class="{{ torrent.progress_bar_class }} h-full rounded-full transition-all duration-300"
                     style="width: {{ torrent.progress }}%"></div>
             </div>
-            <span class="text-xs text-text-muted w-12 text-right">{{ torrent.progress_rounded }}%</span>
+            <span id="progress-text-{{ torrent.hash }}" class="text-xs text-text-muted w-12 text-right">{{
+                torrent.progress_rounded }}%</span>
         </div>
 
         <!-- Status -->
@@ -69,12 +72,14 @@
         </div>
 
         <!-- Down Speed -->
-        <div class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
+        <div id="down-rate-{{ torrent.hash }}"
+            class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
             {{ torrent.down_rate }}
         </div>
 
         <!-- Up Speed -->
-        <div class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
+        <div id="up-rate-{{ torrent.hash }}"
+            class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
             {{ torrent.up_rate }}
         </div>
 
@@ -196,11 +201,14 @@
 
                 <!-- Progress Bar -->
                 <div class="mt-3">
-                    <div class="h-1.5 bg-bg-secondary rounded-full overflow-hidden">
-                        <div class="{{ torrent.progress_bar_class }} h-full rounded-full transition-all duration-300"
+                    <div id="mobile-progress-container-{{ torrent.hash }}"
+                        class="h-1.5 bg-bg-secondary rounded-full overflow-hidden">
+                        <div id="mobile-progress-bar-{{ torrent.hash }}"
+                            class="{{ torrent.progress_bar_class }} h-full rounded-full transition-all duration-300"
                             style="width: {{ torrent.progress }}%"></div>
                     </div>
-                    <div class="mt-1.5 text-xs {% if torrent.is_paused %}text-yellow-400{% else %}{% if torrent.status == "
+                    <div id="mobile-progress-text-{{ torrent.hash }}"
+                        class="mt-1.5 text-xs {% if torrent.is_paused %}text-yellow-400{% else %}{% if torrent.status == "
                         Seeding" %}text-emerald-400{% else %}{% if torrent.status=="Downloading" %}text-blue-400{% else
                         %}text-text-muted{% endif %}{% endif %}{% endif %}">
                         {% if torrent.progress_rounded == 100 %}100%{% else %}%{{ torrent.progress_rounded }}
