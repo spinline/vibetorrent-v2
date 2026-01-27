@@ -75,8 +75,8 @@ pub async fn torrents_list(
     let all_torrents = state.latest_torrents().await
         .map(|arc| (*arc).clone())
         .unwrap_or_default();
-    let html = torrents_service::render_torrents_html(&state, &query, None, &all_torrents).await?;
-    Ok(Html(html))
+    let (list_html, counts_html) = torrents_service::render_torrents_html(&state, &query, None, &all_torrents).await?;
+    Ok(Html(format!("{}{}", list_html, counts_html)))
 }
 
 /// Get filtered torrent list
@@ -89,8 +89,8 @@ pub async fn torrents_filtered(
     let all_torrents = state.latest_torrents().await
         .map(|arc| (*arc).clone())
         .unwrap_or_default();
-    let html = torrents_service::render_torrents_html(&state, &query, Some(filter.as_str()), &all_torrents).await?;
-    Ok(Html(html))
+    let (list_html, counts_html) = torrents_service::render_torrents_html(&state, &query, Some(filter.as_str()), &all_torrents).await?;
+    Ok(Html(format!("{}{}", list_html, counts_html)))
 }
 
 /// Pause a torrent
@@ -222,9 +222,9 @@ pub async fn add_torrent(
         sort: None,
         order: None,
     };
-    let html = torrents_service::render_torrents_html(&state, &query, None, &torrents).await?;
+    let (list_html, counts_html) = torrents_service::render_torrents_html(&state, &query, None, &torrents).await?;
 
-    Ok(([("HX-Trigger", "closeModal")], Html(html)))
+    Ok(([("HX-Trigger", "closeModal")], Html(format!("{}{}", list_html, counts_html))))
 }
 
 /// Get stats partial (for HTMX polling)

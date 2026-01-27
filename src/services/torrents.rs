@@ -17,7 +17,7 @@ pub async fn render_torrents_html(
     query: &FilterQuery,
     filter: Option<&str>,
     all_torrents: &[Torrent],
-) -> Result<String, AppError> {
+) -> Result<(String, String), AppError> {
     let torrents = apply_filter_sort(all_torrents, filter, query);
 
     // Starred set snapshot (avoid per-row await)
@@ -46,7 +46,7 @@ pub async fn render_torrents_html(
         .render()
         .map_err(|e| AppError::TemplateError(e.to_string()))?;
 
-    Ok(format!("{}{}", list_html, counts_html))
+    Ok((list_html, counts_html))
 }
 
 pub fn apply_filter_sort(

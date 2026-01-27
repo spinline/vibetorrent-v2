@@ -31,12 +31,12 @@ pub async fn torrent_events(
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let initial = match state.latest_torrents().await {
         Some(torrents) => {
-            let html = match torrents_service::render_torrents_html(&state, &query, None, &torrents).await {
-                Ok(html) => html,
-                Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+            let (list_html, counts_html) = match torrents_service::render_torrents_html(&state, &query, None, &torrents).await {
+                Ok(res) => res,
+                Err(_) => (String::from("<div class=\"text-red-400\">Error loading torrents</div>"), String::new()),
             };
-            // OOB Patching: Wrap in a morph swap targeting the list ID
-            let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph:innerHTML\">{}</div>", html);
+            // OOB Patching: Wrap list in a morph swap, append counts (already OOB)
+            let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph:innerHTML\">{}</div>{}", list_html, counts_html);
             Some(Ok(Event::default().event("torrents").data(oob_html)))
         }
         None => None,
@@ -51,12 +51,12 @@ pub async fn torrent_events(
             async move {
                 match msg {
                     Ok(torrents) => {
-                        let html = match torrents_service::render_torrents_html(&state, &query, None, &torrents).await {
-                            Ok(html) => html,
-                            Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+                        let (list_html, counts_html) = match torrents_service::render_torrents_html(&state, &query, None, &torrents).await {
+                            Ok(res) => res,
+                            Err(_) => (String::from("<div class=\"text-red-400\">Error loading torrents</div>"), String::new()),
                         };
-                        // OOB Patching: Wrap in a morph swap targeting the list ID
-                        let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph:innerHTML\">{}</div>", html);
+                        // OOB Patching: Wrap list in a morph swap, append counts (already OOB)
+                        let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph:innerHTML\">{}</div>{}", list_html, counts_html);
                         Some(Ok(Event::default().event("torrents").data(oob_html)))
                     }
                     Err(_) => None,
@@ -82,12 +82,12 @@ pub async fn torrent_filtered_events(
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let initial = match state.latest_torrents().await {
         Some(torrents) => {
-            let html = match torrents_service::render_torrents_html(&state, &query, Some(&filter), &torrents).await {
-                Ok(html) => html,
-                Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+            let (list_html, counts_html) = match torrents_service::render_torrents_html(&state, &query, Some(&filter), &torrents).await {
+                Ok(res) => res,
+                Err(_) => (String::from("<div class=\"text-red-400\">Error loading torrents</div>"), String::new()),
             };
-            // OOB Patching: Wrap in a morph swap targeting the list ID
-            let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph:innerHTML\">{}</div>", html);
+            // OOB Patching: Wrap list in a morph swap, append counts (already OOB)
+            let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph:innerHTML\">{}</div>{}", list_html, counts_html);
             Some(Ok(Event::default().event("torrents").data(oob_html)))
         }
         None => None,
@@ -104,12 +104,12 @@ pub async fn torrent_filtered_events(
             async move {
                 match msg {
                     Ok(torrents) => {
-                        let html = match torrents_service::render_torrents_html(&state, &query, Some(&filter), &torrents).await {
-                            Ok(html) => html,
-                            Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+                        let (list_html, counts_html) = match torrents_service::render_torrents_html(&state, &query, Some(&filter), &torrents).await {
+                            Ok(res) => res,
+                            Err(_) => (String::from("<div class=\"text-red-400\">Error loading torrents</div>"), String::new()),
                         };
-                        // OOB Patching: Wrap in a morph swap targeting the list ID
-                        let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph:innerHTML\">{}</div>", html);
+                        // OOB Patching: Wrap list in a morph swap, append counts (already OOB)
+                        let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph:innerHTML\">{}</div>{}", list_html, counts_html);
                         Some(Ok(Event::default().event("torrents").data(oob_html)))
                     }
                     Err(_) => None,
