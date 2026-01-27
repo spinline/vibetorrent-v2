@@ -5,7 +5,7 @@ use crate::error::AppError;
 use crate::routes::FilterQuery;
 use crate::rtorrent::{Torrent, TorrentState};
 use crate::state::AppState;
-use crate::templates::{SidebarCountsTemplate, TorrentListTemplate, TorrentView};
+use crate::templates::{SidebarCountsTemplate, TorrentListTemplate, TorrentOobTemplate, TorrentView};
 
 /// Render torrent list + sidebar counts from a shared snapshot, applying optional filter/search/sort.
 ///
@@ -47,6 +47,50 @@ pub async fn render_torrents_html(
         .map_err(|e| AppError::TemplateError(e.to_string()))?;
 
     Ok(format!("{}{}", list_html, counts_html))
+}
+
+/// Render OOB updates for all torrents - only dynamic fields (progress, status, speeds, eta)
+/// This is used for SSE updates after initial load to prevent flickering
+/// Static fields (name, size, star) are NOT updated
+pub async fn render_torrents_oob_html(
+    state: &Arc<AppState>,
+    query: &FilterQuery,
+    filter: Option<&str>,
+    all_torrents: &[Torrent],
+) -> Result<String, AppError> {
+    let torrents = apply_filter_sort(all_torrents, filter, query);
+
+    // Starred set snapshot
+    let starred = state.starred_torrents.read().await.clone();
+
+    // Start with a hidden div that serves as the swap target
+    // OOB elements will be extracted and placed in their respective positions
+    // This empty div is what gets swapped into #torrent-list (harmless, invisible)
+    let mut oob_html = String::from(r#"<div id="oob-updates" style="display:none"></div>"#);
+
+    // Render OOB updates for each torrent
+    for t in &torrents {
+        let is_starred = starred.contains(&t.hash);
+        let view = TorrentView::from_torrent(t, is_starred);
+        let oob_template = TorrentOobTemplate { torrent: view };
+        if let Ok(html) = oob_template.render() {
+            oob_html.push_str(&html);
+        }
+    }
+
+    // Also include sidebar counts
+    let counts = calculate_counts(all_torrents);
+    let counts_template = SidebarCountsTemplate {
+        total_count: counts.total,
+        downloading_count: counts.downloading,
+        seeding_count: counts.seeding,
+        paused_count: counts.paused,
+    };
+    if let Ok(counts_html) = counts_template.render() {
+        oob_html.push_str(&counts_html);
+    }
+
+    Ok(oob_html)
 }
 
 pub fn apply_filter_sort(

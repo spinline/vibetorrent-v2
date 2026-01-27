@@ -67,6 +67,15 @@ pub struct SidebarCountsTemplate {
     pub paused_count: usize,
 }
 
+/// OOB template for updating only dynamic torrent fields via SSE
+/// This prevents flickering by only updating: progress, status, speeds, eta
+/// Static fields (name, size, star) are NOT touched
+#[derive(Template)]
+#[template(path = "partials/torrent_oob.html")]
+pub struct TorrentOobTemplate {
+    pub torrent: TorrentView,
+}
+
 /// View model for torrent display
 #[derive(Clone)]
 pub struct TorrentView {

@@ -26,8 +26,8 @@
             {{ torrent.size }}
         </div>
 
-        <!-- Progress -->
-        <div class="col-span-2 flex items-center gap-3">
+        <!-- Progress (OOB updateable) -->
+        <div id="progress-{{ torrent.hash }}" class="col-span-2 flex items-center gap-3">
             <div class="flex-1 h-2 bg-bg-secondary rounded-full overflow-hidden">
                 <div class="{{ torrent.progress_bar_class }} h-full rounded-full transition-all duration-300"
                     style="width: {{ torrent.progress }}%"></div>
@@ -35,8 +35,8 @@
             <span class="text-xs text-text-muted w-12 text-right">{{ torrent.progress_rounded }}%</span>
         </div>
 
-        <!-- Status -->
-        <div class="col-span-1 flex items-center justify-center">
+        <!-- Status (OOB updateable) -->
+        <div id="status-{{ torrent.hash }}" class="col-span-1 flex items-center justify-center">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium 
                          {% if torrent.is_paused %}bg-orange-500/10 text-orange-400{% else %}{% if torrent.status == "
                 Seeding" %}bg-emerald-500/10 text-emerald-400{% else %}{% if torrent.status=="Downloading"
@@ -67,19 +67,22 @@
             </span>
         </div>
 
-        <!-- Down Speed -->
-        <div class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
+        <!-- Down Speed (OOB updateable) -->
+        <div id="down-{{ torrent.hash }}"
+            class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
             {{ torrent.down_rate }}
         </div>
 
-        <!-- Up Speed -->
-        <div class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
+        <!-- Up Speed (OOB updateable) -->
+        <div id="up-{{ torrent.hash }}"
+            class="col-span-1 text-right text-text-muted text-xs flex items-center justify-end">
             {{ torrent.up_rate }}
         </div>
 
         <!-- ETA / Actions -->
         <div class="col-span-1 flex items-center justify-end gap-2">
-            <span class="text-text-muted text-xs">{{ torrent.eta }}</span>
+            <!-- ETA (OOB updateable) -->
+            <span id="eta-{{ torrent.hash }}" class="text-text-muted text-xs">{{ torrent.eta }}</span>
 
             <!-- Action buttons (visible on hover) -->
             <div class="hidden group-hover:flex items-center gap-1">

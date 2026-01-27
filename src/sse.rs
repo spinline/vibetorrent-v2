@@ -4,6 +4,7 @@
 //! - Broadcasts torrent updates to all connected clients
 //! - Supports filtering and sorting per-client via query parameters
 //! - Handles reconnection gracefully
+//! - Uses OOB (Out-of-Band) updates to prevent UI flickering
 //! - Includes sidebar counts and stats updates
 
 use axum::{
@@ -25,10 +26,14 @@ use askama::Template;
 /// 
 /// Clients connect with optional filter/sort parameters:
 /// GET /events/torrents?search=ubuntu&sort=name&order=asc
+///
+/// First event: Full torrent list HTML (for initial render)
+/// Subsequent events: OOB updates for dynamic fields only (prevents flicker)
 pub async fn torrent_events(
     State(state): State<Arc<AppState>>,
     Query(query): Query<FilterQuery>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    // First event: send full list for initial render
     let initial = match state.latest_torrents().await {
         Some(torrents) => {
             let html = match torrents_service::render_torrents_html(&state, &query, None, &torrents).await {
@@ -40,6 +45,7 @@ pub async fn torrent_events(
         None => None,
     };
 
+    // Subsequent events: send OOB updates for dynamic fields only
     let updates = BroadcastStream::new(state.subscribe_torrents()).filter_map({
         let state = state.clone();
         let query = query.clone();
@@ -49,11 +55,17 @@ pub async fn torrent_events(
             async move {
                 match msg {
                     Ok(torrents) => {
-                        let html = match torrents_service::render_torrents_html(&state, &query, None, &torrents).await {
+                        // Use OOB updates for subsequent events to prevent flickering
+                        let html = match torrents_service::render_torrents_oob_html(&state, &query, None, &torrents).await {
                             Ok(html) => html,
-                            Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+                            Err(_) => String::from(""),
                         };
-                        Some(Ok(Event::default().event("torrents").data(html)))
+                        // Only send if there's content
+                        if html.is_empty() {
+                            None
+                        } else {
+                            Some(Ok(Event::default().event("torrents").data(html)))
+                        }
                     }
                     Err(_) => None,
                 }
@@ -76,6 +88,7 @@ pub async fn torrent_filtered_events(
     axum::extract::Path(filter): axum::extract::Path<String>,
     Query(query): Query<FilterQuery>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    // First event: send full list for initial render
     let initial = match state.latest_torrents().await {
         Some(torrents) => {
             let html = match torrents_service::render_torrents_html(&state, &query, Some(&filter), &torrents).await {
@@ -87,6 +100,7 @@ pub async fn torrent_filtered_events(
         None => None,
     };
 
+    // Subsequent events: send OOB updates for dynamic fields only
     let updates = BroadcastStream::new(state.subscribe_torrents()).filter_map({
         let state = state.clone();
         let query = query.clone();
@@ -98,11 +112,16 @@ pub async fn torrent_filtered_events(
             async move {
                 match msg {
                     Ok(torrents) => {
-                        let html = match torrents_service::render_torrents_html(&state, &query, Some(&filter), &torrents).await {
+                        // Use OOB updates for subsequent events to prevent flickering
+                        let html = match torrents_service::render_torrents_oob_html(&state, &query, Some(&filter), &torrents).await {
                             Ok(html) => html,
-                            Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
+                            Err(_) => String::from(""),
                         };
-                        Some(Ok(Event::default().event("torrents").data(html)))
+                        if html.is_empty() {
+                            None
+                        } else {
+                            Some(Ok(Event::default().event("torrents").data(html)))
+                        }
                     }
                     Err(_) => None,
                 }
@@ -151,4 +170,3 @@ pub async fn stats_events(
             .text("keep-alive"),
     )
 }
-
