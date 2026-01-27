@@ -163,8 +163,8 @@
                 </div>
 
                 <!-- Stats (hidden on mobile) -->
-                <div id="stats-container" hx-ext="sse" sse-connect="/events/stats" sse-swap="stats" hx-swap="innerHTML"
-                    class="hidden lg:flex items-center gap-6">
+                <div id="stats-container" hx-ext="sse,morph" sse-connect="/events/stats" sse-swap="stats"
+                    hx-swap="morph:innerHTML settle:0" class="hidden lg:flex items-center gap-6">
                     {% include "partials/stats.html" %}
                 </div>
 
@@ -322,7 +322,7 @@
 
             <!-- Torrent Rows -->
             <div id="torrent-list" hx-ext="sse,morph" sse-connect="/events/torrents" sse-swap="torrents"
-                hx-swap="morph:innerHTML">
+                hx-swap="morph:innerHTML settle:0">
                 {% include "partials/torrent_list.html" %}
             </div>
         </div>

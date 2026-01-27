@@ -1,4 +1,4 @@
-<div data-torrent-count="{{ torrents.len() }}"></div>
+<div id="torrent-list-counter" data-torrent-count="{{ torrents.len() }}"></div>
 {% for torrent in torrents %}
 {% include "partials/torrent_row.html" %}
 {% endfor %}
