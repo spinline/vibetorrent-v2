@@ -470,13 +470,14 @@ impl RtorrentClient {
     }
     
     pub async fn get_global_stats(&self) -> Result<GlobalStats> {
-        // Get download rate
-        let down_xml = Self::build_simple_xml("throttle.global_down.rate");
+        // Get current download rate (bytes/sec)
+        // throttle.global_down.total returns instantaneous rate, not throttle limit
+        let down_xml = Self::build_simple_xml("throttle.global_down.total");
         let down_response = self.send_request(&down_xml).await?;
         let down_rate = self.parse_int_response(&down_response).unwrap_or(0);
         
-        // Get upload rate
-        let up_xml = Self::build_simple_xml("throttle.global_up.rate");
+        // Get current upload rate (bytes/sec)
+        let up_xml = Self::build_simple_xml("throttle.global_up.total");
         let up_response = self.send_request(&up_xml).await?;
         let up_rate = self.parse_int_response(&up_response).unwrap_or(0);
         
