@@ -120,10 +120,15 @@ impl AppState {
                                 let total_down_rate: i64 = torrents.iter().map(|t| t.down_rate).sum();
                                 let total_up_rate: i64 = torrents.iter().map(|t| t.up_rate).sum();
                                 
-                                // Get disk space from the first torrent if available
-                                let free_disk_space = torrents.first()
-                                    .map(|t| t.free_disk_space)
-                                    .unwrap_or(0);
+                                // Get disk space from the first torrent if available, otherwise check filesystem
+                                let free_disk_space = if let Some(t) = torrents.first() {
+                                    t.free_disk_space
+                                } else {
+                                    match rtorrent.get_download_path().await {
+                                        Ok(path) => get_disk_space_from_df(&path).unwrap_or(0),
+                                        Err(_) => 0,
+                                    }
+                                };
                                 
                                 // Get base stats and add calculated values
                                 match rtorrent.get_global_stats().await {
@@ -164,4 +169,32 @@ impl Drop for AppState {
     fn drop(&mut self) {
         let _ = self.shutdown_tx.send(true);
     }
+}
+
+fn get_disk_space_from_df(path: &str) -> Option<i64> {
+    use std::process::Command;
+    let output = Command::new("df")
+        .arg("-k") // 1K blocks
+        .arg("-P") // POSIX portability
+        .arg(path)
+        .output()
+        .ok()?;
+        
+    if !output.status.success() {
+        return None;
+    }
+    
+    let out_str = String::from_utf8_lossy(&output.stdout);
+    let lines: Vec<&str> = out_str.lines().collect();
+    if lines.len() >= 2 {
+        let last_line = lines.last()?;
+        let parts: Vec<&str> = last_line.split_whitespace().collect();
+        // Filesystem blocks used available capacity mounted
+        // Index 3 is available (0-based)
+        if parts.len() >= 4 {
+            let available_k = parts[3].parse::<i64>().ok()?;
+            return Some(available_k * 1024);
+        }
+    }
+    None
 }

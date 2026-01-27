@@ -517,6 +517,13 @@ impl RtorrentClient {
         self.parse_string_response(&response)
             .ok_or_else(|| AppError::XmlRpcError("Failed to parse version".to_string()))
     }
+    
+    pub async fn get_download_path(&self) -> Result<String> {
+        let xml = Self::build_simple_xml("directory.default");
+        let response = self.send_request(&xml).await?;
+        self.parse_string_response(&response)
+            .ok_or_else(|| AppError::XmlRpcError("Failed to parse download path".to_string()))
+    }
 
     fn parse_string_response(&self, xml: &str) -> Option<String> {
         let mut reader = Reader::from_str(xml);
