@@ -321,7 +321,7 @@
             </div>
 
             <!-- Torrent Rows -->
-            <div id="torrent-list" hx-ext="sse" sse-connect="/events/torrents" sse-swap="torrents"
+            <div id="torrent-list" hx-ext="sse,morph" sse-connect="/events/torrents" sse-swap="torrents"
                 hx-swap="morph:innerHTML">
                 {% include "partials/torrent_list.html" %}
             </div>
