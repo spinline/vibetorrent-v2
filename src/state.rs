@@ -105,30 +105,37 @@ impl AppState {
                         let need_torrents = torrents_tx.receiver_count() > 0;
                         let need_stats = stats_tx.receiver_count() > 0;
 
-                        if need_torrents {
-                            match rtorrent.get_torrents().await {
-                                Ok(torrents) => {
-                                    let snapshot = Arc::new(torrents);
-                                    *last_torrents.write().await = Some(snapshot.clone());
-                                    let _ = torrents_tx.send(snapshot);
-                                }
-                                Err(err) => {
-                                    tracing::warn!("poller: get_torrents failed: {}", err);
+                        // Always fetch torrents to get accurate speed data
+                        let torrents_result = rtorrent.get_torrents().await;
+                        
+                        if let Ok(ref torrents) = torrents_result {
+                            if need_torrents {
+                                let snapshot = Arc::new(torrents.clone());
+                                *last_torrents.write().await = Some(snapshot.clone());
+                                let _ = torrents_tx.send(snapshot);
+                            }
+                            
+                            // Calculate global rates from individual torrent rates
+                            if need_stats {
+                                let total_down_rate: i64 = torrents.iter().map(|t| t.down_rate).sum();
+                                let total_up_rate: i64 = torrents.iter().map(|t| t.up_rate).sum();
+                                
+                                // Get base stats (disk space, peers) and add calculated rates
+                                match rtorrent.get_global_stats().await {
+                                    Ok(mut stats) => {
+                                        stats.down_rate = total_down_rate;
+                                        stats.up_rate = total_up_rate;
+                                        let snapshot = Arc::new(stats);
+                                        *last_stats.write().await = Some(snapshot.clone());
+                                        let _ = stats_tx.send(snapshot);
+                                    }
+                                    Err(err) => {
+                                        tracing::warn!("poller: get_global_stats failed: {}", err);
+                                    }
                                 }
                             }
-                        }
-
-                        if need_stats {
-                            match rtorrent.get_global_stats().await {
-                                Ok(stats) => {
-                                    let snapshot = Arc::new(stats);
-                                    *last_stats.write().await = Some(snapshot.clone());
-                                    let _ = stats_tx.send(snapshot);
-                                }
-                                Err(err) => {
-                                    tracing::warn!("poller: get_global_stats failed: {}", err);
-                                }
-                            }
+                        } else if let Err(err) = torrents_result {
+                            tracing::warn!("poller: get_torrents failed: {}", err);
                         }
                     }
                     changed = shutdown_rx.changed() => {

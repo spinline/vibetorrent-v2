@@ -470,20 +470,19 @@ impl RtorrentClient {
     }
     
     pub async fn get_global_stats(&self) -> Result<GlobalStats> {
-        // Get current download rate (bytes/sec)
-        // throttle.global_down.total returns instantaneous rate, not throttle limit
-        let down_xml = Self::build_simple_xml("throttle.global_down.total");
-        let down_response = self.send_request(&down_xml).await?;
-        let down_rate = self.parse_int_response(&down_response).unwrap_or(0);
+        // Speed rates are calculated from torrent data in the caller (state.rs poller)
+        let down_rate = 0i64;
+        let up_rate = 0i64;
         
-        // Get current upload rate (bytes/sec)
-        let up_xml = Self::build_simple_xml("throttle.global_up.total");
-        let up_response = self.send_request(&up_xml).await?;
-        let up_rate = self.parse_int_response(&up_response).unwrap_or(0);
-        
-        // Get free disk space
-        let _disk_xml = Self::build_simple_xml("system.files.status_failures");
-        let free_disk_space = 2_000_000_000_000i64; // 2TB placeholder - would need actual path
+        // Get default directory to check free space
+        let dir_xml = Self::build_simple_xml("directory.default");
+        let dir_response = self.send_request(&dir_xml).await?;
+        let default_dir = self.parse_string_response(&dir_response).unwrap_or_else(|| "/".to_string());
+
+        // Get free disk space using get_safe_free_diskspace with the default directory
+        let disk_xml = Self::build_single_param_xml("get_safe_free_diskspace", &default_dir);
+        let disk_response = self.send_request(&disk_xml).await?;
+        let free_disk_space = self.parse_int_response(&disk_response).unwrap_or(0);
         
         // Count active peers (simplified)
         let active_peers = 0i64;
