@@ -326,7 +326,7 @@
             </div>
             
             <!-- Hidden SSE Sink for OOB Updates -->
-            <div id="sse-sink" class="hidden" hx-ext="sse" sse-connect="/events/torrents" sse-swap="torrents"></div>
+            <div id="sse-sink" class="hidden" hx-ext="sse" sse-connect="/events/torrents" sse-swap="torrents" hx-swap="none"></div>
         </div>
 
         <footer id="torrent-footer" class="border-t border-border px-6 py-3 text-sm text-text-muted">
@@ -366,6 +366,9 @@
         if (currentSearch) {
             params.set('search', currentSearch);
         }
+        // Add timestamp to prevent caching and force new connection
+        params.set('_t', Date.now());
+        
         if (params.toString()) {
             url += '?' + params.toString();
         }
@@ -377,17 +380,22 @@
         const oldSink = document.getElementById('sse-sink');
         
         if (oldSink) {
-            // Create replacement sink with new URL
-            const newSink = document.createElement('div');
-            newSink.id = 'sse-sink';
-            newSink.className = 'hidden';
-            newSink.setAttribute('hx-ext', 'sse');
-            newSink.setAttribute('sse-connect', url);
-            newSink.setAttribute('sse-swap', 'torrents');
+            // Remove old sink completely to close connection
+            oldSink.remove();
             
-            // Swap sinks to restart connection
-            oldSink.replaceWith(newSink);
-            htmx.process(newSink);
+            // Create and add new sink with a small delay to ensure clean state
+            setTimeout(() => {
+                const newSink = document.createElement('div');
+                newSink.id = 'sse-sink';
+                newSink.className = 'hidden';
+                newSink.setAttribute('hx-ext', 'sse');
+                newSink.setAttribute('sse-connect', url);
+                newSink.setAttribute('sse-swap', 'torrents');
+                newSink.setAttribute('hx-swap', 'none'); // Don't put content in sink, rely on OOB
+                
+                document.getElementById('torrent-list').parentNode.appendChild(newSink);
+                htmx.process(newSink);
+            }, 10);
         }
     }
 
