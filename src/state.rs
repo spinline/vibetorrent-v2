@@ -120,11 +120,19 @@ impl AppState {
                                 let total_down_rate: i64 = torrents.iter().map(|t| t.down_rate).sum();
                                 let total_up_rate: i64 = torrents.iter().map(|t| t.up_rate).sum();
                                 
-                                // Get base stats (disk space, peers) and add calculated rates
+                                // Get disk space from the first torrent if available
+                                let free_disk_space = torrents.first()
+                                    .map(|t| t.free_disk_space)
+                                    .unwrap_or(0);
+                                
+                                // Get base stats and add calculated values
                                 match rtorrent.get_global_stats().await {
                                     Ok(mut stats) => {
                                         stats.down_rate = total_down_rate;
                                         stats.up_rate = total_up_rate;
+                                        if free_disk_space > 0 {
+                                            stats.free_disk_space = free_disk_space;
+                                        }
                                         let snapshot = Arc::new(stats);
                                         *last_stats.write().await = Some(snapshot.clone());
                                         let _ = stats_tx.send(snapshot);

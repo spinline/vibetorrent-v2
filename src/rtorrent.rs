@@ -31,6 +31,7 @@ pub struct Torrent {
     pub is_hashing: bool,
     pub complete: bool,
     pub message: String,
+    pub free_disk_space: i64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
@@ -341,6 +342,7 @@ impl RtorrentClient {
                 "d.complete=",
                 "d.message=",
                 "d.ratio=",
+                "d.free_diskspace=",
             ],
         )?;
         
@@ -419,6 +421,7 @@ impl RtorrentClient {
                                     complete,
                                     message: current_values[10].clone(),
                                     ratio: current_values[11].parse::<f64>().unwrap_or(0.0) / 1000.0,
+                                    free_disk_space: current_values[12].parse().unwrap_or(0),
                                     state,
                                 });
                             }
@@ -470,32 +473,19 @@ impl RtorrentClient {
     }
     
     pub async fn get_global_stats(&self) -> Result<GlobalStats> {
-        // Speed rates are calculated from torrent data in the caller (state.rs poller)
-        let down_rate = 0i64;
-        let up_rate = 0i64;
-        
-        // Get default directory to check free space
-        let dir_xml = Self::build_simple_xml("directory.default");
-        let dir_response = self.send_request(&dir_xml).await?;
-        let default_dir = self.parse_string_response(&dir_response).unwrap_or_else(|| "/".to_string());
-
-        // Get free disk space using get_safe_free_diskspace with the default directory
-        let disk_xml = Self::build_single_param_xml("get_safe_free_diskspace", &default_dir);
-        let disk_response = self.send_request(&disk_xml).await?;
-        let free_disk_space = self.parse_int_response(&disk_response).unwrap_or(0);
-        
-        // Count active peers (simplified)
-        let active_peers = 0i64;
-        
+        // Speed rates and disk space are now calculated/extracted from torrent data in state.rs poller
         Ok(GlobalStats {
-            down_rate,
-            up_rate,
-            free_disk_space,
-            active_peers,
+            down_rate: 0,
+            up_rate: 0,
+            free_disk_space: 0,
+            active_peers: 0,
         })
     }
     
     fn parse_int_response(&self, xml: &str) -> Option<i64> {
+        if xml.contains("<fault>") {
+            return None;
+        }
         let mut reader = Reader::from_str(xml);
         reader.config_mut().trim_text(true);
         let mut buf = Vec::new();
