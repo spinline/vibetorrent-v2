@@ -321,10 +321,12 @@
             </div>
 
             <!-- Torrent Rows -->
-            <div id="torrent-list" hx-ext="sse" sse-connect="/events/torrents" sse-swap="torrents"
-                hx-swap="morph:innerHTML">
+            <div id="torrent-list">
                 {% include "partials/torrent_list.html" %}
             </div>
+            
+            <!-- Hidden SSE Sink for OOB Updates -->
+            <div id="sse-sink" class="hidden" hx-ext="sse" sse-connect="/events/torrents" sse-swap="torrents"></div>
         </div>
 
         <footer id="torrent-footer" class="border-t border-border px-6 py-3 text-sm text-text-muted">
@@ -371,24 +373,22 @@
     }
 
     function reconnectSse() {
-        const torrentList = document.getElementById('torrent-list');
         const url = buildSseUrl();
-        const content = torrentList.innerHTML;
-
-        // Create new element with updated SSE URL
-        const newElement = document.createElement('div');
-        newElement.id = 'torrent-list';
-        newElement.setAttribute('hx-ext', 'sse');
-        newElement.setAttribute('sse-connect', url);
-        newElement.setAttribute('sse-swap', 'torrents');
-        newElement.setAttribute('hx-swap', 'morph:innerHTML');
-        newElement.innerHTML = content;
-
-        // Replace old element (this closes the old SSE connection)
-        torrentList.replaceWith(newElement);
-
-        // Initialize HTMX on new element
-        htmx.process(newElement);
+        const oldSink = document.getElementById('sse-sink');
+        
+        if (oldSink) {
+            // Create replacement sink with new URL
+            const newSink = document.createElement('div');
+            newSink.id = 'sse-sink';
+            newSink.className = 'hidden';
+            newSink.setAttribute('hx-ext', 'sse');
+            newSink.setAttribute('sse-connect', url);
+            newSink.setAttribute('sse-swap', 'torrents');
+            
+            // Swap sinks to restart connection
+            oldSink.replaceWith(newSink);
+            htmx.process(newSink);
+        }
     }
 
     // Track search input changes
