@@ -1,6 +1,7 @@
-<div id="torrent-{{ torrent.hash }}" class="group">
+<div id="torrent-{{ torrent.hash }}" class="group torrent-row-wrapper">
     <!-- Desktop View (lg and up) -->
-    <div class="hidden lg:grid grid-cols-12 gap-4 px-6 py-4 border-b border-border hover:bg-bg-hover transition-colors">
+    <div id="torrent-desktop-{{ torrent.hash }}"
+        class="torrent-row hidden lg:grid grid-cols-12 gap-4 px-6 py-4 border-b border-border transition-colors">
         <!-- Name -->
         <div class="col-span-5 flex items-center gap-3 min-w-0">
             <button hx-post="/torrent/{{ torrent.hash }}/toggle-star" hx-target="#torrent-{{ torrent.hash }}"
@@ -117,7 +118,7 @@
     </div>
 
     <!-- Mobile Card View (below lg) -->
-    <div
+    <div id="torrent-mobile-{{ torrent.hash }}"
         class="lg:hidden mx-3 my-2 bg-bg-card rounded-xl border border-border p-4 active:bg-bg-hover transition-colors">
         <div class="flex gap-3">
             <!-- Status Icon -->

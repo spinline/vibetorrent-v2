@@ -174,17 +174,14 @@
     color: var(--text-primary);
   }
 
-  /* Torrent row - themed */
+  /* Torrent row - hover state preserved during idiomorph SSE updates */
   .torrent-row {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border-subtle);
-    transition: var(--theme-transition);
+    transition: background-color 0.15s ease-out;
   }
 
-  .torrent-row:hover {
+  .torrent-row:hover,
+  .torrent-row.torrent-hovered,
+  .torrent-row[data-was-hovered="true"] {
     background-color: var(--bg-hover);
   }
 

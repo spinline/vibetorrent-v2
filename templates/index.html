@@ -349,6 +349,52 @@
     let currentOrder = 'desc';
     let currentSearch = '';
 
+    // Idiomorph-aware hover state preservation
+    // Idiomorph can't preserve CSS :hover pseudo-class (browser state, not DOM state)
+    // We use idiomorph's lifecycle hooks to track and restore hover state
+    let hoveredRowId = null;
+
+    // Track hover state with pointer events (more reliable than mouseenter/leave)
+    document.addEventListener('pointerenter', (e) => {
+        const row = e.target.closest('.torrent-row');
+        if (row && row.id) {
+            hoveredRowId = row.id;
+            row.classList.add('torrent-hovered');
+        }
+    }, true);
+
+    document.addEventListener('pointerleave', (e) => {
+        const row = e.target.closest('.torrent-row');
+        if (row && row.id === hoveredRowId) {
+            hoveredRowId = null;
+            row.classList.remove('torrent-hovered');
+        }
+    }, true);
+
+    // Idiomorph lifecycle: beforeSwap - element is about to be morphed
+    document.body.addEventListener('htmx:beforeSwap', (e) => {
+        // Store current hover state before idiomorph modifies DOM
+        if (hoveredRowId) {
+            const row = document.getElementById(hoveredRowId);
+            if (row) {
+                // Mark with data attribute that idiomorph will preserve during morph
+                row.setAttribute('data-was-hovered', 'true');
+            }
+        }
+    });
+
+    // Idiomorph lifecycle: afterSwap - element has been morphed
+    document.body.addEventListener('htmx:afterSwap', (e) => {
+        // Restore hover state after idiomorph updates
+        if (hoveredRowId) {
+            const row = document.getElementById(hoveredRowId);
+            if (row) {
+                row.classList.add('torrent-hovered');
+                row.removeAttribute('data-was-hovered');
+            }
+        }
+    });
+
     // Icon paths - simple chevrons
     const iconDown = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>';
     const iconUp = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>';
