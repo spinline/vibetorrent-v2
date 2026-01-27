@@ -35,7 +35,9 @@ pub async fn torrent_events(
                 Ok(html) => html,
                 Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
             };
-            Some(Ok(Event::default().event("torrents").data(html)))
+            // OOB swap with morph to update list content without destroying container
+            let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph\">{}</div>", html);
+            Some(Ok(Event::default().event("torrents").data(oob_html)))
         }
         None => None,
     };
@@ -53,7 +55,9 @@ pub async fn torrent_events(
                             Ok(html) => html,
                             Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
                         };
-                        Some(Ok(Event::default().event("torrents").data(html)))
+                        // OOB swap with morph to update list content without destroying container
+                        let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph\">{}</div>", html);
+                        Some(Ok(Event::default().event("torrents").data(oob_html)))
                     }
                     Err(_) => None,
                 }
@@ -82,7 +86,9 @@ pub async fn torrent_filtered_events(
                 Ok(html) => html,
                 Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
             };
-            Some(Ok(Event::default().event("torrents").data(html)))
+            // OOB swap with morph to update list content without destroying container
+            let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph\">{}</div>", html);
+            Some(Ok(Event::default().event("torrents").data(oob_html)))
         }
         None => None,
     };
@@ -102,7 +108,9 @@ pub async fn torrent_filtered_events(
                             Ok(html) => html,
                             Err(_) => String::from("<div class=\"text-red-400\">Error loading torrents</div>"),
                         };
-                        Some(Ok(Event::default().event("torrents").data(html)))
+                        // OOB swap with morph to update list content without destroying container
+                        let oob_html = format!("<div id=\"torrent-list\" hx-swap-oob=\"morph\">{}</div>", html);
+                        Some(Ok(Event::default().event("torrents").data(oob_html)))
                     }
                     Err(_) => None,
                 }

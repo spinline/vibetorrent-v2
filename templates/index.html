@@ -321,10 +321,12 @@
             </div>
 
             <!-- Torrent Rows -->
-            <div id="torrent-list" hx-ext="sse" sse-connect="/events/torrents" sse-swap="torrents"
-                hx-swap="morph:innerHTML">
+            <div id="torrent-list">
                 {% include "partials/torrent_list.html" %}
             </div>
+            
+            <!-- Hidden SSE receiver for OOB updates -->
+            <div id="sse-receiver" class="hidden" hx-ext="sse" sse-connect="/events/torrents" sse-swap="torrents"></div>
         </div>
 
         <footer id="torrent-footer" class="border-t border-border px-6 py-3 text-sm text-text-muted">
@@ -371,24 +373,26 @@
     }
 
     function reconnectSse() {
-        const torrentList = document.getElementById('torrent-list');
         const url = buildSseUrl();
-        const content = torrentList.innerHTML;
-
-        // Create new element with updated SSE URL
-        const newElement = document.createElement('div');
-        newElement.id = 'torrent-list';
-        newElement.setAttribute('hx-ext', 'sse');
-        newElement.setAttribute('sse-connect', url);
-        newElement.setAttribute('sse-swap', 'torrents');
-        newElement.setAttribute('hx-swap', 'morph:innerHTML');
-        newElement.innerHTML = content;
-
-        // Replace old element (this closes the old SSE connection)
-        torrentList.replaceWith(newElement);
-
-        // Initialize HTMX on new element
-        htmx.process(newElement);
+        const oldReceiver = document.getElementById('sse-receiver');
+        
+        if (oldReceiver) {
+            // Use htmx.remove to properly close SSE connection
+            htmx.remove(oldReceiver);
+            
+            // Create new receiver with updated URL
+            setTimeout(() => {
+                const newReceiver = document.createElement('div');
+                newReceiver.id = 'sse-receiver';
+                newReceiver.className = 'hidden';
+                newReceiver.setAttribute('hx-ext', 'sse');
+                newReceiver.setAttribute('sse-connect', url);
+                newReceiver.setAttribute('sse-swap', 'torrents');
+                
+                document.getElementById('torrent-list').parentNode.appendChild(newReceiver);
+                htmx.process(newReceiver);
+            }, 100);
+        }
     }
 
     // Track search input changes
