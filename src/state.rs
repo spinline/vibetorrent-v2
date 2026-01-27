@@ -74,6 +74,21 @@ impl AppState {
         self.last_stats.read().await.clone()
     }
 
+    /// Refresh the torrent cache immediately and broadcast to SSE clients.
+    /// Call this after torrent operations (add/remove/pause/resume) to update UI instantly.
+    pub async fn refresh_cache(&self) {
+        match self.rtorrent.get_torrents().await {
+            Ok(torrents) => {
+                let snapshot = Arc::new(torrents);
+                *self.last_torrents.write().await = Some(snapshot.clone());
+                let _ = self.torrents_tx.send(snapshot);
+            }
+            Err(err) => {
+                tracing::warn!("refresh_cache: get_torrents failed: {}", err);
+            }
+        }
+    }
+
     fn spawn_poller(&self, mut shutdown_rx: watch::Receiver<bool>) {
         let rtorrent = self.rtorrent.clone();
         let torrents_tx = self.torrents_tx.clone();

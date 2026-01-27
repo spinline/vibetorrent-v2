@@ -27,13 +27,18 @@ pub struct FilterQuery {
 pub async fn index(
     State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse> {
-    let torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
-    let stats = state.rtorrent.get_global_stats().await.unwrap_or_else(|_| GlobalStats {
-        down_rate: 0,
-        up_rate: 0,
-        free_disk_space: 2_000_000_000_000,
-        active_peers: 0,
-    });
+    // Use cached torrents instead of querying rTorrent directly
+    let torrents = state.latest_torrents().await
+        .map(|arc| (*arc).clone())
+        .unwrap_or_default();
+    let stats = state.latest_stats().await
+        .map(|arc| (*arc).clone())
+        .unwrap_or_else(|| GlobalStats {
+            down_rate: 0,
+            up_rate: 0,
+            free_disk_space: 2_000_000_000_000,
+            active_peers: 0,
+        });
     let rtorrent_version = state.rtorrent.get_client_version().await.unwrap_or_else(|_| "Disconnected".to_string());
     
     let mut torrent_views = Vec::new();
@@ -66,7 +71,10 @@ pub async fn torrents_list(
     State(state): State<Arc<AppState>>,
     Query(query): Query<FilterQuery>,
 ) -> Result<impl IntoResponse> {
-    let all_torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
+    // Use cached torrents - no rTorrent query needed for filtering/sorting
+    let all_torrents = state.latest_torrents().await
+        .map(|arc| (*arc).clone())
+        .unwrap_or_default();
     let html = torrents_service::render_torrents_html(&state, &query, None, &all_torrents).await?;
     Ok(Html(html))
 }
@@ -77,7 +85,10 @@ pub async fn torrents_filtered(
     Path(filter): Path<String>,
     Query(query): Query<FilterQuery>,
 ) -> Result<impl IntoResponse> {
-    let all_torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
+    // Use cached torrents - no rTorrent query needed for filtering
+    let all_torrents = state.latest_torrents().await
+        .map(|arc| (*arc).clone())
+        .unwrap_or_default();
     let html = torrents_service::render_torrents_html(&state, &query, Some(filter.as_str()), &all_torrents).await?;
     Ok(Html(html))
 }
@@ -89,8 +100,11 @@ pub async fn torrent_pause(
 ) -> Result<impl IntoResponse> {
     state.rtorrent.pause_torrent(&hash).await?;
     
-    // Return updated row
-    let torrents = state.rtorrent.get_torrents().await?;
+    // Refresh cache and broadcast to SSE clients
+    state.refresh_cache().await;
+    
+    // Return updated row from refreshed cache
+    let torrents = state.latest_torrents().await.ok_or_else(|| AppError::NotFound("Cache not ready".to_string()))?;
     if let Some(torrent) = torrents.iter().find(|t| t.hash == hash) {
         let is_starred = state.is_starred(&hash).await;
         let view = TorrentView::from_torrent(torrent, is_starred);
@@ -108,8 +122,11 @@ pub async fn torrent_resume(
 ) -> Result<impl IntoResponse> {
     state.rtorrent.resume_torrent(&hash).await?;
     
-    // Return updated row
-    let torrents = state.rtorrent.get_torrents().await?;
+    // Refresh cache and broadcast to SSE clients
+    state.refresh_cache().await;
+    
+    // Return updated row from refreshed cache
+    let torrents = state.latest_torrents().await.ok_or_else(|| AppError::NotFound("Cache not ready".to_string()))?;
     if let Some(torrent) = torrents.iter().find(|t| t.hash == hash) {
         let is_starred = state.is_starred(&hash).await;
         let view = TorrentView::from_torrent(torrent, is_starred);
@@ -126,6 +143,8 @@ pub async fn torrent_remove(
     Path(hash): Path<String>,
 ) -> Result<impl IntoResponse> {
     state.rtorrent.remove_torrent(&hash).await?;
+    // Refresh cache and broadcast to SSE clients
+    state.refresh_cache().await;
     Ok(StatusCode::OK)
 }
 
@@ -136,8 +155,8 @@ pub async fn torrent_toggle_star(
 ) -> Result<impl IntoResponse> {
     let is_starred = state.toggle_star(&hash).await;
     
-    // Return updated row
-    let torrents = state.rtorrent.get_torrents().await?;
+    // Use cached torrents - star toggle doesn't require rTorrent query
+    let torrents = state.latest_torrents().await.ok_or_else(|| AppError::NotFound("Cache not ready".to_string()))?;
     if let Some(torrent) = torrents.iter().find(|t| t.hash == hash) {
         let view = TorrentView::from_torrent(torrent, is_starred);
         let template = TorrentRowTemplate { torrent: view };
@@ -191,8 +210,13 @@ pub async fn add_torrent(
         }
     }
     
+    // Refresh cache and broadcast to SSE clients after adding torrent
+    state.refresh_cache().await;
+    
     // Return updated torrent list + sidebar counts with HX-Trigger to close modal
-    let torrents = state.rtorrent.get_torrents().await.unwrap_or_default();
+    let torrents = state.latest_torrents().await
+        .map(|arc| (*arc).clone())
+        .unwrap_or_default();
     let query = FilterQuery {
         search: None,
         sort: None,
@@ -207,12 +231,15 @@ pub async fn add_torrent(
 pub async fn stats_partial(
     State(state): State<Arc<AppState>>,
 ) -> Result<impl IntoResponse> {
-    let stats = state.rtorrent.get_global_stats().await.unwrap_or_else(|_| GlobalStats {
-        down_rate: 0,
-        up_rate: 0,
-        free_disk_space: 2_000_000_000_000,
-        active_peers: 0,
-    });
+    // Use cached stats instead of querying rTorrent directly
+    let stats = state.latest_stats().await
+        .map(|arc| (*arc).clone())
+        .unwrap_or_else(|| GlobalStats {
+            down_rate: 0,
+            up_rate: 0,
+            free_disk_space: 2_000_000_000_000,
+            active_peers: 0,
+        });
     
     let template = StatsTemplate { stats };
     Ok(Html(template.render().map_err(|e| AppError::TemplateError(e.to_string()))?))
