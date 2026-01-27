@@ -380,8 +380,9 @@
         const oldSink = document.getElementById('sse-sink');
         
         if (oldSink) {
-            // Remove old sink completely to close connection
-            oldSink.remove();
+            // Use htmx.remove() instead of .remove() to trigger cleanup events 
+            // and properly close the EventSource connection
+            htmx.remove(oldSink);
             
             // Create and add new sink with a small delay to ensure clean state
             setTimeout(() => {
@@ -395,7 +396,7 @@
                 
                 document.getElementById('torrent-list').parentNode.appendChild(newSink);
                 htmx.process(newSink);
-            }, 10);
+            }, 50); // Increased delay slightly to be safe
         }
     }
 
